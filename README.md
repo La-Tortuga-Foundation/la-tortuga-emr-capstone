@@ -445,11 +445,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Project Team**
 - GitHub Issues: [Report bugs or request features](https://github.com/yourusername/la-tortuga-emr/issues)
-- Email: [Your team email]
+
 
 **La Tortuga Foundation**
-- Website: [Foundation website]
-- Mission Coordinator: [Contact information]
+- Website: https://latortugafoundation.org/
 
 ---
 
