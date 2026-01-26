@@ -108,8 +108,7 @@ cp .env.example .env
 2. Sprint 0 planning meeting:
    - Review project timeline
    - Assign initial tasks
-   - Set up communication channels (Slack/Discord)
-   - Schedule daily standup time
+   - Schedule daily/weekly standup time
 
 **Create Initial Issues**
 - Repository setup ✓ (Already done!)
@@ -180,7 +179,7 @@ By end of Week 1 (Feb 1), you should have:
 - **May 31**: Sprint 8 complete (Deployment)
 
 ### Communication Schedule
-- **Daily**: Async standup in Slack/Discord (5 min)
+- **Daily**: Async standup in Discord (5 min)
 - **Monday**: Sprint planning (1-2 hours)
 - **Friday**: Sprint review + retrospective (1.5 hours)
 - **Bi-weekly**: Demo to stakeholders
