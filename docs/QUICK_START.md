@@ -44,8 +44,8 @@ Get the La Tortuga EMR project up and running on your development machine in und
 
 ```bash
 # Clone the repo
-git clone https://github.com/yourusername/la-tortuga-emr.git
-cd la-tortuga-emr
+git clone https://github.com/La-Tortuga-Foundation/la-tortuga-emr-capstone.git
+
 
 # Checkout develop branch (main working branch)
 git checkout develop
