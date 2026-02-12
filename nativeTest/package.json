@@ -29,7 +29,11 @@
     "expo-system-ui": "~6.0.9",
     "expo-web-browser": "~15.0.10",
     "nativewind": "^4.2.1",
+<<<<<<< HEAD
     "prettier-plugin-tailwindcss": "^0.5.11",
+=======
+    "prettier-plugin-tailwindcss": "^0.5.14",
+>>>>>>> 308d5acfb25f829e8c9a0141b4c43a3d8115cabf
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.71.1",
@@ -40,7 +44,11 @@
     "react-native-screens": "~4.16.0",
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.5.1",
+<<<<<<< HEAD
     "tailwindcss": "^3.4.17"
+=======
+    "tailwindcss": "^3.4.19"
+>>>>>>> 308d5acfb25f829e8c9a0141b4c43a3d8115cabf
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
