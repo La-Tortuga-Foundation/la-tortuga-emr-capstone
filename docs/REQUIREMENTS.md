@@ -462,13 +462,13 @@ This document outlines the functional and non-functional requirements for the La
 **Priority**: Critical
 
 **Requirements**:
-- [ ] WiFi Direct mesh network (6 tablets)
+- [ ] Router-based mesh network (6 tablets)
 - [ ] Gossip protocol for updates
 - [ ] CRDT conflict resolution
 - [ ] Background sync (doesn't interrupt UX)
 
 **Acceptance Criteria**:
-- Tablets auto-discover each other
+- Tablets auto-discover each other via mDNS
 - Updates sync within 5 seconds
 - No data loss in conflicts
 - Sync works in background (battery optimized)

@@ -47,7 +47,7 @@ la-tortuga-emr/
 │   │   ├── sync/                # P2P synchronization
 │   │   ├── encryption/          # Knox & SQLCipher
 │   │   ├── database/            # SQLite operations
-│   │   └── networking/          # WiFi Direct
+│   │   └── networking/          # Local Network P2P
 │   ├── screens/                 # Screen components
 │   ├── navigation/              # React Navigation
 │   ├── redux/                   # State management
@@ -114,7 +114,7 @@ cp .env.example .env
 - Repository setup ✓ (Already done!)
 - Database schema design
 - UI mockups (medical, dental, queue, inventory)
-- Research WiFi Direct APIs
+- Research mDNS/Bonjour for peer discovery
 - Research Samsung Knox SDK
 
 ### Day 3-5: Foundation Work (Wed-Fri)
@@ -173,7 +173,7 @@ By end of Week 1 (Feb 1), you should have:
 - **Mar 8**: Sprint 2 complete (Medical Features)
 - **Mar 22**: Sprint 3 complete (Dental Features)
 - **Apr 5**: Sprint 4 complete (Queue & Inventory)
-- **Apr 19**: Sprint 5 complete (P2P Sync)
+- **Apr 19**: Sprint 5 complete (P2P Sync - Router-based mesh)
 - **May 3**: Sprint 6 complete (Security)
 - **May 17**: Sprint 7 complete (Testing)
 - **May 31**: Sprint 8 complete (Deployment)
@@ -224,6 +224,7 @@ By end of Week 1 (Feb 1), you should have:
 ### Hardware
 - [ ] Android tablet (Samsung preferred for Knox testing)
 - [ ] USB cable for device debugging
+- [ ] Portable WiFi router (battery-powered, offline)
 - [ ] Multiple tablets for P2P sync testing (can borrow later)
 
 ---
@@ -241,7 +242,7 @@ By end of Week 1 (Feb 1), you should have:
 1. **React Native**: Build a simple "Hello World" app first
 2. **SQLite**: Practice SQL queries in a test database
 3. **Git**: Learn basic commands (branch, commit, push, pull, merge)
-4. **WiFi Direct**: Read Android documentation thoroughly
+4. **mDNS/Bonjour**: Read documentation for peer discovery
 
 ### For Collaboration
 1. **Code reviews**: Give constructive, specific feedback

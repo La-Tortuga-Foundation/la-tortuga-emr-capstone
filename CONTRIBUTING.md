@@ -143,7 +143,7 @@ npm run lint
 # Run on Android emulator
 npm run android
 
-# Run on physical device (recommended for WiFi Direct testing)
+# Run on physical device (recommended for network sync testing)
 npm run android -- --deviceId=<device-id>
 ```
 

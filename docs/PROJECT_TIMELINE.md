@@ -295,14 +295,14 @@
 
 ### Sprint 5: P2P Synchronization (Apr 6 - Apr 19, 2026)
 
-**Goals**: Implement WiFi Direct mesh networking and gossip protocol
+**Goals**: Implement router-based mesh networking and gossip protocol
 
 #### Week 11 (Apr 6 - Apr 12)
 **Jose (Sync Architecture)**
-- [ ] Research WiFi Direct Android APIs
+- [ ] Research mDNS/Bonjour for peer discovery
 - [ ] Design gossip protocol specification
-- [ ] Implement peer discovery service
-- [ ] Create connection manager
+- [ ] Implement mDNS-based peer discovery
+- [ ] Create HTTP/WebSocket connection manager
 - [ ] Build message serialization/deserialization
 
 **Jacob (Sync UI)**
@@ -338,7 +338,7 @@
 - [ ] Document conflict resolution rules
 
 **Deliverables**:
-- ✅ WiFi Direct mesh connects 6 tablets
+- ✅ Router-based mesh connects 6 tablets
 - ✅ Patient updates sync across devices (< 5 sec latency)
 - ✅ Conflicts resolved without data loss
 - ✅ Background sync works reliably
@@ -522,7 +522,7 @@
 ### High-Risk Items
 | Risk | Mitigation | Owner |
 |------|-----------|--------|
-| WiFi Direct unreliable | Extensive testing, fallback to Bluetooth | Jose |
+| Local network reliability | Test with portable router, ensure offline mode | Jose |
 | Knox SDK compatibility issues | Early prototype, test on target hardware | Jose |
 | Sync conflicts cause data loss | Comprehensive conflict tests, version vectors | Jonathan |
 | Battery drain from P2P | Power profiling, optimize sync frequency | Jose |
@@ -530,7 +530,7 @@
 
 ### Contingency Plans
 - **If Knox unavailable**: Fall back to software-only encryption (SQLCipher)
-- **If WiFi Direct fails**: Use Bluetooth Low Energy (reduced bandwidth)
+- **If router setup fails**: Use alternative networking approach (WiFi hotspot)
 - **If 6 tablets too ambitious**: Start with 3, add more post-capstone
 - **If timeline slips**: Deprioritize nice-to-have features, focus on core
 
