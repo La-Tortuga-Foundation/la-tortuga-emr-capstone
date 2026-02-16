@@ -20,7 +20,7 @@ Medical missions in rural areas face critical challenges:
 
 A React Native mobile application with:
 - ✅ **Offline-First Architecture**: All data stored locally, works without internet
-- ✅ **P2P Mesh Synchronization**: WiFi Direct enables device-to-device data sharing
+- ✅ **P2P Mesh Synchronization**: Router-based local network enables device-to-device data sharing
 - ✅ **HIPAA-Compliant Encryption**: Samsung Knox hardware-backed database security
 - ✅ **Real-time Updates**: Priority queue and inventory alerts across all tablets
 - ✅ **Bilingual Interface**: Spanish/English support for patient intake and medical forms
@@ -30,7 +30,7 @@ A React Native mobile application with:
 ## 🎯 Core Features
 
 ### 1. P2P Mesh Synchronization
-- **Technology**: WiFi Direct gossip protocol
+- **Technology**: Router-based gossip protocol with mDNS discovery
 - **Purpose**: When a nurse updates vitals on Tablet A, the dentist on Tablet B instantly receives the update
 - **Implementation**: CRDT-inspired conflict resolution for simultaneous edits
 
@@ -69,18 +69,17 @@ A React Native mobile application with:
 #### Backend/Data Layer
 - **Local Database**: SQLite with SQLCipher encryption
 - **Security**: Samsung Knox hardware integration
-- **Sync Protocol**: Custom WiFi Direct mesh with gossip protocol
+- **Sync Protocol**: Router-based P2P mesh with gossip protocol
 - **Conflict Resolution**: CRDT (Conflict-free Replicated Data Types) patterns
 
 #### Infrastructure
 - **Target Platform**: Android tablets (Samsung Knox-compatible)
-- **Connectivity**: WiFi Direct for P2P, optional cloud sync when available
+- **Connectivity**: Local WiFi network (via offline router) for P2P
 - **Backup**: Firebase/AWS cloud backup when internet accessible
 
 ### System Requirements
 - Android 8.0+ (API level 26+)
 - Samsung Knox-compatible device (for hardware encryption)
-- WiFi Direct capable
 - Minimum 4GB RAM, 32GB storage recommended
 
 ---
@@ -100,7 +99,7 @@ la-tortuga-emr/
 │   │   ├── sync/             # P2P synchronization logic
 │   │   ├── encryption/       # Knox & SQLCipher integration
 │   │   ├── database/         # SQLite schemas and queries
-│   │   └── networking/       # WiFi Direct mesh protocols
+│   │   └── networking/       # P2P mesh protocols (HTTP/WebSocket)
 │   ├── screens/
 │   │   ├── LoginScreen.js
 │   │   ├── PatientSelectScreen.js
@@ -247,7 +246,7 @@ npm run build:ios
 - [ ] Local database integration
 
 ### Phase 3: P2P Synchronization (Weeks 11-14)
-- [ ] WiFi Direct mesh implementation
+- [ ] Router-based mesh implementation
 - [ ] Gossip protocol for data broadcast
 - [ ] CRDT conflict resolution
 - [ ] Background sync service
@@ -419,7 +418,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for deta
 
 ## 🐛 Known Issues & Limitations
 
-- WiFi Direct bandwidth limited to ~25 Mbps
+- Local network bandwidth up to 100+ Mbps (router-dependent)
 - Samsung Knox requires specific device models
 - Background sync may be interrupted by aggressive battery optimization
 - Initial sync of large datasets (500+ patients) may take 2-3 minutes

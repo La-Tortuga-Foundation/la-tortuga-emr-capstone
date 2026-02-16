@@ -36,9 +36,13 @@ Get the La Tortuga EMR project up and running on your development machine in und
   - React Native Tools
   - GitLens
 
-- **Physical Android Tablet** (for WiFi Direct testing)
+- **Physical Android Tablet** (for network sync testing)
   - Samsung Galaxy Tab preferred (Knox support)
   - Android 8.0+ required
+
+- **Portable WiFi Router** (for P2P sync testing)
+  - Battery-powered, offline-capable router
+  - TP-Link, GL.iNet, or similar model
 
 ## Step 1: Clone the Repository
 
@@ -352,10 +356,20 @@ exit
 
 ### Sync Not Working
 
-1. Check WiFi Direct permissions in Android settings
-2. Verify both tablets on same network
+#### Portable Router Setup (for P2P Sync Testing)
+- **Hardware**: Battery-powered WiFi router (TP-Link, GL.iNet, or similar)
+- **Configuration**: 
+  - Configure offline mode (no internet required)
+  - SSID: "LaTortugaEMR-Dev" (or custom)
+  - Connect all tablets to same network
+  - Ensure router is in local network mode (192.168.1.x)
+
+#### Troubleshooting Sync
+1. Verify all tablets connected to same WiFi network
+2. Check mDNS service is running on each tablet
 3. Check sync_log table for pending changes
 4. Review device logs: `adb logcat | grep Sync`
+5. Test network connectivity: ping between tablets
 
 ### Performance Issues
 

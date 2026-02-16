@@ -17,7 +17,7 @@
                 │                           │
 ┌───────────────▼────────────┐  ┌──────────▼────────────────┐
 │    Data Persistence Layer   │  │  Network Sync Layer       │
-│  (SQLite + SQLCipher)       │  │  (WiFi Direct P2P Mesh)   │
+│  (SQLite + SQLCipher)       │  │  (Router-Based P2P Mesh)  │
 └───────────────┬────────────┘  └──────────┬────────────────┘
                 │                           │
 ┌───────────────▼───────────────────────────▼─────────────────┐
@@ -217,16 +217,124 @@ const initDatabase = async () => {
 
 ### 4. Network Sync Layer
 
-#### WiFi Direct P2P Mesh
+#### Router-Based P2P Mesh
 
 ```javascript
 services/sync/
-├── WiFiDirectManager.js      // Android WiFi Direct API wrapper
-├── PeerDiscovery.js          // Find nearby tablets
-├── ConnectionManager.js      // Establish P2P connections
+├── NetworkDiscovery.js       // mDNS service for peer discovery
+├── mDNSService.js            // Bonjour/Zeroconf implementation
+├── HTTPClient.js             // HTTP client for peer communication
+├── WebSocketManager.js       // WebSocket connections for real-time sync
 ├── GossipProtocol.js         // Broadcast updates to peers
 ├── ConflictResolver.js       // CRDT-based merge logic
 └── SyncQueue.js              // Pending changes queue
+```
+
+#### Network Setup
+
+**Hardware Infrastructure**:
+- Portable WiFi router (battery-powered, offline mode)
+- All tablets connect to same local network (192.168.1.x)
+- No internet connection required
+
+**Peer Discovery**:
+- mDNS/Bonjour for automatic service discovery
+- Each tablet advertises itself on local network
+- Tablets discover peers without manual configuration
+
+**Communication Protocols**:
+- HTTP REST API for data synchronization
+- WebSocket for real-time updates and notifications
+- All traffic encrypted with TLS
+
+#### mDNS Peer Discovery Example
+
+```javascript
+// NetworkDiscovery.js - mDNS service advertisement
+import Zeroconf from 'react-native-zeroconf';
+
+const advertiseSelf = async () => {
+  const zeroconf = new Zeroconf();
+  
+  // Advertise this tablet as EMR peer
+  zeroconf.publishService(
+    'emr-sync',           // Service type
+    'tcp',                // Protocol
+    'local',              // Domain
+    `EMR-Tablet-${deviceId}`, // Name
+    8080,                 // Port
+    {
+      deviceId: deviceId,
+      version: '1.0.0',
+      timestamp: Date.now()
+    }
+  );
+};
+
+const discoverPeers = async () => {
+  const zeroconf = new Zeroconf();
+  
+  zeroconf.on('resolved', (service) => {
+    console.log('Found peer:', service.name);
+    // Add to peer list
+    addPeer({
+      id: service.txt.deviceId,
+      host: service.host,
+      port: service.port,
+      timestamp: service.txt.timestamp
+    });
+  });
+  
+  // Start scanning for peers
+  zeroconf.scan('emr-sync', 'tcp', 'local');
+};
+```
+
+#### HTTP/WebSocket Communication
+
+```javascript
+// HTTPClient.js - Sync data via HTTP
+const syncPatientData = async (peerId, patientData) => {
+  const peer = getPeer(peerId);
+  
+  try {
+    const response = await fetch(`https://${peer.host}:${peer.port}/api/sync`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Device-ID': deviceId,
+        'X-Timestamp': Date.now()
+      },
+      body: JSON.stringify({
+        type: 'patient_update',
+        data: patientData,
+        version: patientData.version
+      })
+    });
+    
+    return await response.json();
+  } catch (error) {
+    // Queue for retry
+    queueSyncOperation(peerId, patientData);
+  }
+};
+
+// WebSocketManager.js - Real-time updates
+const connectToPeer = (peer) => {
+  const ws = new WebSocket(`wss://${peer.host}:${peer.port}/ws`);
+  
+  ws.onmessage = (event) => {
+    const update = JSON.parse(event.data);
+    handleIncomingUpdate(update);
+  };
+  
+  ws.onopen = () => {
+    // Send pending updates
+    flushSyncQueue(peer.id);
+  };
+  
+  return ws;
+};
 ```
 
 #### Gossip Protocol Flow
@@ -316,7 +424,7 @@ Patient data entered
 
 - **Hardware-Backed Keys**: Knox stores encryption keys in secure hardware (TrustZone)
 - **At-Rest Encryption**: SQLCipher encrypts entire database file
-- **In-Transit Encryption**: WiFi Direct traffic encrypted with TLS
+- **In-Transit Encryption**: Local network traffic encrypted with TLS
 - **Access Control**: PIN/biometric authentication required
 - **Audit Logging**: All PHI access logged with timestamp + user
 - **Remote Wipe**: Lost/stolen tablets can be wiped remotely when they reconnect
