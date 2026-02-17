@@ -1,10 +1,5 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Pressable, Text, TextInput, View } from "react-native";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Link } from 'expo-router';
 import { useState } from 'react';
 import { Button } from '@react-navigation/elements';
@@ -117,7 +112,7 @@ interface MedicalHistorySchema {
 
 type Language = "en" | "sp";
 
-const medicalHistory:MedicalHistorySchema = {
+const medicalHistory: MedicalHistorySchema = {
   title: "Medical History",
   name: "Name",
 
@@ -228,7 +223,7 @@ const medicalHistory:MedicalHistorySchema = {
       "Health goals and care plan:"
   }
 };
-const medicalHistoryEs:MedicalHistorySchema = {
+const medicalHistoryEs: MedicalHistorySchema = {
   title: "Historia Médica",
   name: "Nombre",
 
@@ -348,6 +343,7 @@ const languages: Record<Language, MedicalHistorySchema> = {
 export default function medicalForm() {
 
   const [language, setLanguage] = useState<Language>("en");
+  const [test, setTest] = useState('');
 
   const switchLanguage = () => {
     setLanguage((prev) => (prev === "en" ? "sp" : "en"));
@@ -355,30 +351,21 @@ export default function medicalForm() {
 
   const textBox = languages[language];
   return (
-    <>
-    <ThemedText>{textBox.name}</ThemedText>
-    <ThemedText>{textBox.title}</ThemedText>
+    <View className="flex-12 justify-center items-center">
+      <Pressable className="bg-blue-600 p-4 rounded-lg w-full m-2" onPressIn={switchLanguage}>Switch Languages</Pressable>
+      <View className="flex-row items-center space-x-2">
+        <Text className="text-base text-black">{textBox.name}</Text>
+        <TextInput
+          placeholder={textBox.name}
+          className="border border-gray-400 rounded px-3 py-2 w-48"
+          value={test}
+          onChangeText={setTest}
+        />
+      </View>
+      <Text>{textBox.title}</Text>
+      <Text>{textBox.familyHistory.description}</Text>
 
-    <Button onPressIn={switchLanguage}>Switch Languages</Button>
-    </>
+
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
