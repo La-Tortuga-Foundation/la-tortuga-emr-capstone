@@ -2,7 +2,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { Link } from 'expo-router';
 import { useState } from 'react';
 import { Button } from '@react-navigation/elements';
-import InventorySection from '../components/inventorySection'
+import InventorySection from './pages/components/inventorySection'
 
 export default function inventoryDisplay() {
     const [box, setBox] = useState([["test", 5, 2, ""], ["test2", 1, 3, ""]]); // test data, get real from DB.
