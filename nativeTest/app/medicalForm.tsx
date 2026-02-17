@@ -1,13 +1,13 @@
-// import { Image } from 'expo-image';
-// import { Platform, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
+import { Platform, StyleSheet } from 'react-native';
 
-// import { HelloWave } from '@/components/hello-wave';
-// import ParallaxScrollView from '@/components/parallax-scroll-view';
-// import { ThemedText } from '@/components/themed-text';
-// import { ThemedView } from '@/components/themed-view';
-// import { Link } from 'expo-router';
-// import { useState } from 'react';
-// import { Button } from '@react-navigation/elements';
+import { HelloWave } from '@/components/hello-wave';
+import ParallaxScrollView from '@/components/parallax-scroll-view';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Link } from 'expo-router';
+import { useState } from 'react';
+import { Button } from '@react-navigation/elements';
 
 // interface MedicalHistorySchema {
 //   title: string;
@@ -117,9 +117,9 @@
 
 // type Language = "en" | "sp";
 
-// const medicalHistory:MedicalHistorySchema = {
-//   title: "Medical History",
-//   name: "Name",
+const medicalHistory:MedicalHistorySchema = {
+  title: "Medical History",
+  name: "Name",
 
 //   familyHistory: {
 //     description:
@@ -223,14 +223,14 @@
 //       "Include documentation of other examinations:"
 //   },
 
-//   carePlan: {
-//     goals:
-//       "Health goals and care plan:"
-//   }
-// };
-// const medicalHistoryEs:MedicalHistorySchema = {
-//   title: "Historia Médica",
-//   name: "Nombre",
+  carePlan: {
+    goals:
+      "Health goals and care plan:"
+  }
+};
+const medicalHistoryEs:MedicalHistorySchema = {
+  title: "Historia Médica",
+  name: "Nombre",
 
 //   familyHistory: {
 //     description:
@@ -347,38 +347,38 @@
 
 // export default function medicalForm() {
 
-//   const [language, setLanguage] = useState<Language>("en");
+  const [language, setLanguage] = useState<Language>("en");
 
 //   const switchLanguage = () => {
 //     setLanguage((prev) => (prev === "en" ? "sp" : "en"));
 //   };
 
-//   const textBox = languages[language];
-//   return (
-//     <>
-//     <ThemedText>{textBox.name}</ThemedText>
-//     <ThemedText>{textBox.title}</ThemedText>
+  const textBox = languages[language];
+  return (
+    <>
+    <ThemedText>{textBox.name}</ThemedText>
+    <ThemedText>{textBox.title}</ThemedText>
 
-//     <Button onPressIn={switchLanguage}>Switch Languages</Button>
-//     </>
-//   );
-// }
+    <Button onPressIn={switchLanguage}>Switch Languages</Button>
+    </>
+  );
+}
 
-// const styles = StyleSheet.create({
-//   titleContainer: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     gap: 8,
-//   },
-//   stepContainer: {
-//     gap: 8,
-//     marginBottom: 8,
-//   },
-//   reactLogo: {
-//     height: 178,
-//     width: 290,
-//     bottom: 0,
-//     left: 0,
-//     position: 'absolute',
-//   },
-// });
+const styles = StyleSheet.create({
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  stepContainer: {
+    gap: 8,
+    marginBottom: 8,
+  },
+  reactLogo: {
+    height: 178,
+    width: 290,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+  },
+});

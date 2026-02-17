@@ -41,7 +41,8 @@
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.5.1",
     "tailwindcss": "^3.4.19"
-},
+>>>>>>> 308d5acfb25f829e8c9a0141b4c43a3d8115cabf
+  },
   "devDependencies": {
     "@types/react": "~19.1.0",
     "eslint": "^9.25.0",
