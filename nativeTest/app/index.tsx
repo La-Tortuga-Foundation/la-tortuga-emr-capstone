@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { router } from "expo-router";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, Text, TextInput, View, Image} from "react-native";
 import "../global.css";
 
 export default function Login() {
@@ -14,15 +14,19 @@ export default function Login() {
       return;
     }
 
-      router.replace("/pages/home");
+      router.replace("../pages/home");
   }
 
   return (
     <View className="flex-1 items-center justify-center bg-gray-100">
       <View className="w-full max-w-md px-4">
+        <Image
+          className="mx-auto"
+          source={require("../assets/images/latortuga.png")}
+        />
 
         <Text className="text-xl font-bold text-blue-500 text-center">
-          La Tortuga EMR!
+          La Tortuga EMR
         </Text>
         <TextInput
           className="bg-white p-4 rounded-lg border border-gray-300 m-2"
