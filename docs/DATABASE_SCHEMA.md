@@ -15,19 +15,21 @@ The La Tortuga EMR uses SQLite with SQLCipher encryption for local data storage.
 │ - dob       │         │ - vitals (JSON)  │         │ - procedures    │
 │ - gender    │         │ - medications    │         │ - antibiotics   │
 │ - village   │         │ - provider_id    │         │ - provider_id   │
+  - Status  
 └─────────────┘         └──────────────────┘         └─────────────────┘
-       │1
-       │
-       │*
-┌─────────────┐         ┌──────────────────┐
-│    Queue    │         │    Inventory     │
-│             │         │                  │
-│ - id (PK)   │         │ - id (PK)        │
-│ - patient_id│         │ - item_name      │
-│ - priority  │         │ - quantity       │
-│ - status    │         │ - threshold      │
-│ - wait_time │         │ - category       │
-└─────────────┘         └──────────────────┘
+       
+       
+       
+┌──────────────────┐
+│    Inventory     │
+│                  │
+│ - id (PK)        │
+│ - item_name      │
+│ - quantity       │
+│ - threshold      │
+│ - category       │
+|  - qty_type      |
+└──────────────────┘
 ```
 
 ## Table Schemas
