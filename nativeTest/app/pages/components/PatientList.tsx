@@ -1,5 +1,5 @@
 import { View, Text } from "react-native";
-import {Patient} from "../interfaces/PatientInterface"
+import { Patient } from "../interfaces/PatientInterface"
 
 
 type PatientListProps = {

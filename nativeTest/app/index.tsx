@@ -41,7 +41,7 @@ export default function Login() {
           value={pwd}
           onChangeText={setPwd}
           placeholder="Password"
-          secureTextEntry // ? 
+          secureTextEntry // hides passwords
         />
 
         <Pressable className="bg-blue-600 p-4 rounded-lg"
