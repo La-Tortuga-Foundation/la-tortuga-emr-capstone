@@ -1,61 +1,86 @@
 import { Pressable, Text, TextInput, View } from "react-native";
-import { Link } from 'expo-router';
-import { useState } from 'react';
-import { Button } from '@react-navigation/elements';
+import { Controller } from "react-hook-form";
+import { Props } from '../interfaces/InventoryInterfaces'
 
-type InventorySectionProps = {
-    data: [string, number, number, string];
-    i: number;
-    updateData: (index: number, updatedItem: [string, number, number, string]) => void;
-};
 
-export default function InventorySection({ data, i, updateData }: InventorySectionProps) {
+export default function InventorySection({ control, index, remove, errors }: Props) {
     return (
-        <View className="w-full flex-row">
-            <TextInput
-                placeholder="name"
-                className="border border-gray-400 rounded px-3 py-2 m-2 w-1/4"
-                value={data[0]}
-                onChangeText={e => {
-                    const updated = [...data];
-                    updated[0] = e;
-                    updateData(i, updated);
-                }}
-            />
+        <>
+            <View className="flex-row w-full">
+                <Controller
+                    control={control}
+                    name={`inventory.${index}.name`}
+                    rules={{ required: "Name is required" }}
+                    render={({ field: { onChange, value } }) => (
+                        <TextInput
+                            className="w-1/4 border border-gray-400 rounded px-3 py-2 m-2"
+                            value={value}
+                            onChangeText={onChange}
+                        />
+                    )}
+                />
 
-            <TextInput keyboardType="numeric"
-                placeholder="Amount"
-                className="border border-gray-400 rounded px-3 py-2 m-2 w-1/4"
-                value={data[1].toString()}
-                onChangeText={e => {
-                    const updated = [...data];
-                    updated[1] = e;
-                    updateData(i, updated);
-                }}
-            />
+                <Controller
+                    control={control}
+                    name={`inventory.${index}.amount`}
+                    render={({ field: { onChange, value } }) => (
+                        <TextInput
+                            className="w-1/12 border border-gray-400 rounded px-3 py-2 m-2"
+                            value={value?.toString() ?? ""}
+                            onChangeText={(text) => {
+                                const numeric = text.replace(/[^0-9.]/g, "").replace(/^0+([1-9])/, "$1");
+                                onChange(numeric === "" ? 0 : numeric);
+                            }}
+                            keyboardType="numeric"
+                        />
+                    )}
+                />
 
-            <TextInput keyboardType="numeric"
-                placeholder="Warning Amt"
-                className="border border-gray-400 rounded px-3 py-2 m-2 w-1/4"
-                value={data[2].toString()}
-                onChangeText={e => {
-                    const updated = [...data];
-                    updated[2] = e;
-                    updateData(i, updated);
-                }}
-            />
+                <Controller
+                    control={control}
+                    name={`inventory.${index}.amountType`}
+                    render={({ field: { onChange, value } }) => (
+                        <TextInput
+                            className="w-1/12 border border-gray-400 rounded px-3 py-2 m-2"
+                            value={value}
+                            onChangeText={onChange}
+                        />
+                    )}
+                />
 
-            <TextInput
-                placeholder="Tags"
-                className="border border-gray-400 rounded px-3 py-2 m-2 w-1/4"
-                value={data[3]}
-                onChangeText={e => {
-                    const updated = [...data];
-                    updated[3] = e;
-                    updateData(i, updated);
-                }}
-            />
+                <Controller
+                    control={control}
+                    name={`inventory.${index}.warningAmt`}
+                    render={({ field: { onChange, value } }) => (
+                        <TextInput
+                            className="w-1/12 border border-gray-400 rounded px-3 py-2 m-2"
+                            value={value?.toString() ?? ""}
+                            onChangeText={(text) => {
+                                const numeric = text.replace(/[^0-9.]/g, "").replace(/^0+([0-9])/, "$1");
+                                onChange(numeric === "" ? 0 : numeric);
+                            }}
+                            keyboardType="numeric"
+                        />
+                    )}
+                />
 
-        </View>
+                <Controller
+                    control={control}
+                    name={`inventory.${index}.tags`}
+                    render={({ field: { onChange, value } }) => (
+                        <TextInput
+                            className="w-5/12 border border-gray-400 rounded px-3 py-2 m-2"
+                            value={value}
+                            onChangeText={onChange}
+                        />
+                    )}
+                />
+
+                <Pressable className="bg-red-600 p-2 m-2 rounded-lg w-1/12" onPress={() => remove(index)}>
+                    <Text className="text-center">Remove</Text>
+                </Pressable>
+            </View>
+            {errors.inventory?.[index]?.name && <Text className="w-1/4 text-center text-red-500">{errors.inventory[index].name.message}</Text>}
+        </>
     );
 }
