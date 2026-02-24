@@ -14,12 +14,21 @@ export default function PatientList({ patients }: PatientListProps) {
     return "";
   };
 
+  //sorting needs a map
+  const priorityOrder = {
+    high:1,
+    medium:2,
+    low: 3
+  }
+
   return (
     <View>
-      {patients.map((patient) => (
+      {patients.filter((patient) => patient.status !== "completed")
+      .sort((a,b) => priorityOrder[a.priority] - priorityOrder[b.priority])//sort by priority
+      .map((patient) => (
         <View
           key={patient.id}
-          className={`w-full p-4 mb-3 rounded-lg ${getPriorityColor(patient.priority)}`}
+          className={`w-full p-2 mb-3 rounded-lg ${getPriorityColor(patient.priority)}`}
         >
           <Text className="text-lg font-semibold">{patient.name}</Text>
           <Text className="text-sm text-gray-700">
