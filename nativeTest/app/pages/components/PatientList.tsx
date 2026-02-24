@@ -11,7 +11,8 @@ export default function PatientList({ patients }: PatientListProps) {
   const getPriorityColor = (priority: Patient["priority"]) => {
     if (priority === "high") return "bg-red-200";
     if (priority === "medium") return "bg-yellow-200";
-    return "";
+    if (priority === "low") return "bg-gray-100";
+
   };
 
   //sorting needs a map
