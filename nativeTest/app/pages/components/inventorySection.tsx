@@ -1,12 +1,23 @@
 import { Pressable, Text, TextInput, View } from "react-native";
-import { Controller } from "react-hook-form";
+import { Controller, useWatch } from "react-hook-form";
 import { Props } from '../interfaces/InventoryInterfaces'
 
 
 export default function InventorySection({ control, index, remove, errors }: Props) {
+    const amount = useWatch({
+        control,
+        name: `inventory.${index}.amount`,
+    });
+
+    const warningAmt = useWatch({
+        control,
+        name: `inventory.${index}.warningAmt`,
+    });
+
+
     return (
         <>
-            <View className="flex-row w-full">
+            <View className={`flex-row w-full ${amount <= warningAmt ? "bg-red-200" : ""}`}>
                 <Controller
                     control={control}
                     name={`inventory.${index}.name`}

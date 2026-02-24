@@ -47,23 +47,27 @@ export default function InventoryDisplay() {
     }, [fields, watchedInventory, filter]);
 
     return (
-        <View className="flex-row flex-wrap items-center justify-center">
-            <Text className="w-1/12 text-center">Filter:</Text>
-            <TextInput
-                className="w-10/12 border border-gray-400 rounded px-3 py-2 m-2"
-                placeholder="Filter by name, and tags"
-                value={filter}
-                onChangeText={setFilter}
-            />
+        <View className="flex-1 items-center justify-center">
+            <View className="w-full flex-row items-center justify-center">
+                <Text className="w-1/12 text-center">Filter:</Text>
+                <TextInput
+                    className="w-10/12 border border-gray-400 rounded px-3 py-2 m-2"
+                    placeholder="Filter by name, and tags"
+                    value={filter}
+                    onChangeText={setFilter}
+                />
+            </View>
 
-            <Text className="w-1/4 text-center">Name</Text>
-            <Text className="w-1/12 text-center">Amount</Text>
-            <Text className="w-1/12 text-center">Amount Type</Text>
-            <Text className="w-1/12 text-center">Warning Amount</Text>
-            <Text className="w-5/12 text-center">Tags</Text>
-            <Text className="w-1/12 text-center">Delete</Text>
+            <View className="flex-row w-full">
+                <Text className="w-1/4 text-center">Name</Text>
+                <Text className="w-1/12 text-center">Amount</Text>
+                <Text className="w-1/12 text-center">Amount Type</Text>
+                <Text className="w-1/12 text-center">Warning Amount</Text>
+                <Text className="w-5/12 text-center">Tags</Text>
+                <Text className="w-1/12 text-center">Delete</Text>
+            </View>
 
-            <ScrollView className="max-h-96">
+            <ScrollView className="flex-1 w-full">
                 {filteredFields.map((filtered) => <InventorySection
                     key={filtered.field.id}
                     control={control}
@@ -88,20 +92,21 @@ export default function InventoryDisplay() {
             >
                 <Text className="text-white text-center">Add New</Text>
             </Pressable>
+            <View className="flex-row w-full">
+                <Pressable
+                    className="bg-green-600 p-4 rounded-lg w-1/2"
+                    onPress={handleSubmit(onSubmit)}
+                >
+                    <Text className="text-white text-center">Submit</Text>
+                </Pressable>
 
-            <Pressable
-                className="bg-green-600 p-4 rounded-lg w-1/2"
-                onPress={handleSubmit(onSubmit)}
-            >
-                <Text className="text-white text-center">Submit</Text>
-            </Pressable>
-
-            <Pressable
-                className="bg-red-600 p-4 rounded-lg w-1/2"
-                onPress={() => reset()}
-            >
-                <Text className="text-white text-center">Cancel</Text>
-            </Pressable>
+                <Pressable
+                    className="bg-red-600 p-4 rounded-lg w-1/2"
+                    onPress={() => reset()}
+                >
+                    <Text className="text-white text-center">Cancel</Text>
+                </Pressable>
+            </View>
         </View>
     );
 }

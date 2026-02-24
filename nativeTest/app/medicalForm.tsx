@@ -108,6 +108,61 @@ interface MedicalHistorySchema {
   };
 };
 
+interface MedData {
+  // Medical conditions
+  asthma: boolean,
+  diabetes: boolean,
+  cancer: boolean,
+  hypertension: boolean,
+  allergies: boolean,
+  otherCondition: String,
+
+  // General symptoms
+  headache: boolean,
+  blurredVision: boolean,
+  depressedFeelings: boolean,
+  difficultySleeping: boolean,
+  nausea: boolean,
+
+  // Digestive
+  vomiting: boolean,
+  diarrhea: boolean,
+  constipation: boolean,
+  stomachPain: boolean,
+  heartburn: boolean,
+
+  // Genitourinary
+  frequency: boolean,
+  urgency: boolean,
+  burning: boolean,
+  pain: boolean,
+  genSores: boolean,
+  discharge: boolean,
+
+  // Musculoskeletal
+  arthritis: boolean,
+  brokenBones: boolean,
+  sprains: boolean,
+
+  // ENT
+  soreThroat: boolean,
+  entItching: boolean,
+  earPain: boolean,
+  entAllergies: boolean,
+
+  // Cardiopulmonary
+  difficultyBreathing: boolean,
+  chestPain: boolean,
+  highBloodPressurePalpitations: boolean,
+  coughingBlood: boolean,
+
+  // Skin
+  skinSores: boolean,
+  rashes: boolean,
+  unusualSpots: boolean,
+  skinItching: boolean,
+}
+
 
 type Language = "en" | "sp";
 
@@ -347,7 +402,7 @@ export default function medicalForm() {
   const switchLanguage = () => {
     setLanguage((prev) => (prev === "en" ? "sp" : "en"));
   };
-  const { control, handleSubmit } = useForm({
+  const { control, handleSubmit } = useForm<MedData>({
     defaultValues: {
       // Medical conditions
       asthma: false,
@@ -403,7 +458,7 @@ export default function medicalForm() {
       skinItching: false,
     },
   });
-  const onSubmit = (data) => {
+  const onSubmit = (data: MedData) => {
     // console.log(data);
   };
 
@@ -412,7 +467,7 @@ export default function medicalForm() {
     <ScrollView className="flex-1 items-center">
       <Pressable className="bg-blue-600 p-4 rounded-lg w-full m-2" onPressIn={switchLanguage}><Text className="text-white text-center">Switch Languages</Text></Pressable>
       <View className="flex-row items-center space-x-2">
-        <Text className="text-base text-black">{textBox.name}</Text>
+        <Text className="text-base text-black my-4">{textBox.name}</Text>
         <TextInput
           placeholder={textBox.name}
           className="border border-gray-400 rounded px-3 py-2 w-48"
@@ -423,7 +478,7 @@ export default function medicalForm() {
 
       <Text>{textBox.title}</Text>
 
-      <Text>{textBox.familyHistory.description}</Text>
+      <Text className="my-4">{textBox.familyHistory.description}</Text>
       <Checkbox name="asthma" control={control} label={textBox.familyHistory.asthma} />
       <Checkbox name="diabetes" control={control} label={textBox.familyHistory.diabetes} />
       <Checkbox name="cancer" control={control} label={textBox.familyHistory.cancer} />
@@ -436,20 +491,20 @@ export default function medicalForm() {
         render={({ field: { onChange, value } }) => (
           <TextInput
             className="border border-gray-400 rounded px-3 py-2 m-2"
-            value={value}
+            value={value.toString()}
             onChangeText={onChange}
           />
         )}
       />
 
-      <Text>{textBox.personalProblems.description}</Text>
-      <Text>{textBox.personalProblems.neurological.sectionTitle}</Text>
+      <Text className="my-2">{textBox.personalProblems.description}</Text>
+      <Text className="my-2">{textBox.personalProblems.neurological.sectionTitle}</Text>
       <Checkbox name="headache" control={control} label={textBox.personalProblems.neurological.headache} />
       <Checkbox name="blurredVision" control={control} label={textBox.personalProblems.neurological.blurredVision} />
       <Checkbox name="depressedFeelings" control={control} label={textBox.personalProblems.neurological.depressedFeelings} />
       <Checkbox name="difficultySleeping" control={control} label={textBox.personalProblems.neurological.difficultySleeping} />
 
-      <Text>{textBox.personalProblems.digestive.sectionTitle}</Text>
+      <Text className="my-2">{textBox.personalProblems.digestive.sectionTitle}</Text>
       <Checkbox name="nausea" control={control} label={textBox.personalProblems.digestive.nausea} />
       <Checkbox name="vomiting" control={control} label={textBox.personalProblems.digestive.vomiting} />
       <Checkbox name="diarrhea" control={control} label={textBox.personalProblems.digestive.diarrhea} />
@@ -457,7 +512,7 @@ export default function medicalForm() {
       <Checkbox name="stomachPain" control={control} label={textBox.personalProblems.digestive.stomachPain} />
       <Checkbox name="heartburn" control={control} label={textBox.personalProblems.digestive.heartburn} />
 
-      <Text>{textBox.personalProblems.genitourinary.sectionTitle}</Text>
+      <Text className="my-2">{textBox.personalProblems.genitourinary.sectionTitle}</Text>
       <Checkbox name="frequency" control={control} label={textBox.personalProblems.genitourinary.frequency} />
       <Checkbox name="urgency" control={control} label={textBox.personalProblems.genitourinary.urgency} />
       <Checkbox name="burning" control={control} label={textBox.personalProblems.genitourinary.burning} />
@@ -465,24 +520,24 @@ export default function medicalForm() {
       <Checkbox name="genSores" control={control} label={textBox.personalProblems.genitourinary.sores} />
       <Checkbox name="discharge" control={control} label={textBox.personalProblems.genitourinary.discharge} />
 
-      <Text>{textBox.personalProblems.musculoskeletal.sectionTitle}</Text>
+      <Text className="my-2">{textBox.personalProblems.musculoskeletal.sectionTitle}</Text>
       <Checkbox name="arthritis" control={control} label={textBox.personalProblems.musculoskeletal.arthritis} />
       <Checkbox name="brokenBones" control={control} label={textBox.personalProblems.musculoskeletal.brokenBones} />
       <Checkbox name="sprains" control={control} label={textBox.personalProblems.musculoskeletal.sprains} />
 
-      <Text>{textBox.personalProblems.ent.sectionTitle}</Text>
+      <Text className="my-2">{textBox.personalProblems.ent.sectionTitle}</Text>
       <Checkbox name="soreThroat" control={control} label={textBox.personalProblems.ent.soreThroat} />
       <Checkbox name="entAllergies" control={control} label={textBox.personalProblems.ent.allergies} />
       <Checkbox name="entItching" control={control} label={textBox.personalProblems.ent.itching} />
       <Checkbox name="earPain" control={control} label={textBox.personalProblems.ent.earPain} />
 
-      <Text>{textBox.personalProblems.cardiopulmonary.sectionTitle}</Text>
+      <Text className="my-2">{textBox.personalProblems.cardiopulmonary.sectionTitle}</Text>
       <Checkbox name="difficultyBreathing" control={control} label={textBox.personalProblems.cardiopulmonary.difficultyBreathing} />
       <Checkbox name="chestPain" control={control} label={textBox.personalProblems.cardiopulmonary.chestPain} />
       <Checkbox name="highBloodPressurePalpitations" control={control} label={textBox.personalProblems.cardiopulmonary.highBloodPressurePalpitations} />
       <Checkbox name="coughingBlood" control={control} label={textBox.personalProblems.cardiopulmonary.coughingBlood} />
 
-      <Text>{textBox.personalProblems.skin.sectionTitle}</Text>
+      <Text className="my-2">{textBox.personalProblems.skin.sectionTitle}</Text>
       <Checkbox name="skinSores" control={control} label={textBox.personalProblems.skin.sores} />
       <Checkbox name="rashes" control={control} label={textBox.personalProblems.skin.rashes} />
       <Checkbox name="unusualSpots" control={control} label={textBox.personalProblems.skin.unusualSpots} />
