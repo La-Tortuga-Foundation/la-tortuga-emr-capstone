@@ -26,15 +26,15 @@ const TABLES = {
   inventory_categories:    { section: "lookup", x: 1820,y: 20,  cols: ["inventoryCategoryId PK","label","...sync"] },
 
   // CORE
-  patients:                { section: "core",   x: 400, y: 340, cols: ["patientId PK","firstName","lastName","dateOfBirth","genderTypeId FK","communityId FK","phone","notes","...sync"] },
-  visits:                  { section: "core",   x: 720, y: 340, cols: ["visitId PK","patientId FK","clinicId","statusTypeId FK","shortCode","checkedInAt","closedAt","...sync"] },
-  visit_services:          { section: "core",   x: 960, y: 260, cols: ["visitServiceId PK","visitId FK","serviceTypeId FK","...sync"] },
+  patients:                { section: "core",   x: 340, y: 390, cols: ["patientId PK","firstName","lastName","dateOfBirth","genderTypeId FK","communityId FK","phone","notes","...sync"] },
+  visits:                  { section: "core",   x: 680, y: 390, cols: ["visitId PK","patientId FK","clinicId","statusTypeId FK","shortCode","checkedInAt","closedAt","...sync"] },
+  visit_services:          { section: "core",   x: 1060, y: 390, cols: ["visitServiceId PK","visitId FK","serviceTypeId FK","...sync"] },
 
   // MEDICAL
-  medical_intakes:         { section: "medical",x: 300, y: 560, cols: ["intakeId PK","visitId FK UNIQUE","chiefComplaint","nurseNotes","doctorNotes","...sync"] },
-  visit_vitals:            { section: "medical",x: 60,  y: 760, cols: ["vitalId PK","intakeId FK","vitalTypeId FK","value","recordedAt","...sync"] },
-  visit_conditions:        { section: "medical",x: 320, y: 760, cols: ["visitConditionId PK","intakeId FK","conditionTypeId FK","isPrimary","notes","...sync"] },
-  visit_medications:       { section: "medical",x: 580, y: 760, cols: ["visitMedicationId PK","intakeId FK","medicationTypeId FK","dosage","frequency","durationDays","quantity","unitTypeId FK","...sync"] },
+  medical_intakes:         { section: "medical",x: 340, y: 650, cols: ["intakeId PK","visitId FK UNIQUE","chiefComplaint","nurseNotes","...sync"] },
+  visit_vitals:            { section: "medical",x: 60,  y: 860, cols: ["vitalId PK","intakeId FK","vitalTypeId FK","value","recordedAt","...sync"] },
+  visit_conditions:        { section: "medical",x: 310, y: 860, cols: ["visitConditionId PK","intakeId FK","conditionTypeId FK","isPrimary","notes","...sync"] },
+  visit_medications:       { section: "medical",x: 570, y: 860, cols: ["visitMedicationId PK","intakeId FK","medicationTypeId FK","dosage","frequency","durationDays","quantity","unitTypeId FK","...sync"] },
 
   // DENTAL
   dental_intakes:          { section: "dental", x: 940, y: 560, cols: ["dentalIntakeId PK","visitId FK UNIQUE","chiefComplaint","dentistNotes","...sync"] },
@@ -275,7 +275,7 @@ export default function ERD() {
       width: "100%", height: "100vh",
       background: "#050A0F",
       fontFamily: "'JetBrains Mono', monospace",
-      overflow: "auto",
+      overflow: "hidden",
       userSelect: "none",
     }}>
       {/* Header */}
