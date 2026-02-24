@@ -16,3 +16,8 @@ export type Props = {
     remove: UseFieldArrayRemove;
     errors: FieldError<FormData>;
 };
+export type CheckboxProps = {
+    name: string;
+    control: Control<any>;
+    label: string;
+};
