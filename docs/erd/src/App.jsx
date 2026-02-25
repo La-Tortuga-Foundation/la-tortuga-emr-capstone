@@ -12,17 +12,17 @@ const WHITE = "#F8FAFC";
 // ── Schema Definition ──────────────────────────────────────────────
 const TABLES = {
   // LOOKUPS
-  status_types:            { section: "lookup", x: 20,  y: 20,  cols: ["statusTypeId PK","label","displayOrder","colorHex","...sync"] },
-  gender_types:            { section: "lookup", x: 220, y: 20,  cols: ["genderTypeId PK","label","...sync"] },
+  status_types:            { section: "lookup", x: 20,  y: 20,  cols: ["statusTypeId PK","label","displayOrder","color"] },
+  gender_types:            { section: "lookup", x: 220, y: 20,  cols: ["genderTypeId PK","label"] },
   communities:             { section: "lookup", x: 420, y: 20,  cols: ["communityId PK","name","region","...sync"] },
-  vital_types:             { section: "lookup", x: 640, y: 20,  cols: ["vitalTypeId PK","label","unit","displayOrder","...sync"] },
+  vital_types:             { section: "lookup", x: 640, y: 20,  cols: ["vitalTypeId PK","label","unit","displayOrder"] },
   condition_types:         { section: "lookup", x: 860, y: 20,  cols: ["conditionTypeId PK","label","icd10Code","...sync"] },
   medication_categories:   { section: "lookup", x: 1100,y: 20,  cols: ["medicationCategoryId PK","label","...sync"] },
   medication_types:        { section: "lookup", x: 1100,y: 160, cols: ["medicationTypeId PK","name","categoryId FK","defaultUnit","...sync"] },
-  unit_types:              { section: "lookup", x: 1340,y: 20,  cols: ["unitTypeId PK","label","abbreviation","...sync"] },
-  service_types:           { section: "lookup", x: 1340,y: 160, cols: ["serviceTypeId PK","label","...sync"] },
-  dental_procedure_types:  { section: "lookup", x: 1580,y: 20,  cols: ["dentalProcedureTypeId PK","label","description","...sync"] },
-  antibiotic_types:        { section: "lookup", x: 1580,y: 160, cols: ["antibioticTypeId PK","name","defaultDosage","...sync"] },
+  unit_types:              { section: "lookup", x: 1340,y: 20,  cols: ["unitTypeId PK","label","abbreviation"] },
+  service_types:           { section: "lookup", x: 1340,y: 160, cols: ["serviceTypeId PK","label"] },
+  dental_procedure_types:  { section: "lookup", x: 1580,y: 20,  cols: ["dentalProcedureTypeId PK","label","description"] },
+  antibiotic_types:        { section: "lookup", x: 1580,y: 160, cols: ["antibioticTypeId PK","name","defaultDosage"] },
   inventory_categories:    { section: "lookup", x: 1820,y: 20,  cols: ["inventoryCategoryId PK","label","...sync"] },
 
   // CORE
@@ -43,7 +43,7 @@ const TABLES = {
 
   // INVENTORY
   inventory_items:         { section: "inventory",x: 1400,y: 340, cols: ["itemId PK","name","medicationTypeId FK","categoryId FK","quantity","unitTypeId FK","warningThreshold","expirationDate","...sync"] },
-  inventory_transactions:  { section: "inventory",x: 1400,y: 560, cols: ["transactionId PK","itemId FK","visitId FK","transactionType","quantityDelta","quantityAfter","recordedAt","...sync"] },
+  inventory_transactions:  { section: "inventory",x: 1400,y: 560, cols: ["transactionId PK","itemId FK","visitId FK","transactionType","quantityDelta","recordedAt","...sync"] },
 
   // SYSTEM
   settings:                { section: "system", x: 1700,y: 560, cols: ["key PK","value","updatedAt"] },
