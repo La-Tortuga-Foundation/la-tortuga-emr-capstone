@@ -325,7 +325,7 @@ export default function ERD() {
           { color: "#6EE7B7", label: "Primary Key (PK)" },
           { color: "#FCD34D", label: "Foreign Key (FK)" },
           { color: "#94A3B8", label: "Regular column" },
-          { color: "#4B5563", label: "Sync metadata (all tables)" },
+          { color: "#4B5563", label: "Sync metadata" },
         ].map(({ color, label }) => (
           <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 10, height: 3, background: color, borderRadius: 2 }} />
