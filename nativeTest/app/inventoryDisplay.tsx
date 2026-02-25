@@ -3,9 +3,13 @@ import InventorySection from './pages/components/inventorySection'
 import { InventoryData, FormData } from './pages/interfaces/InventoryInterfaces'
 import { useForm, useFieldArray } from "react-hook-form";
 import { useState, useMemo } from "react";
+import Dropdown from "./pages/components/dropDown"
+import MultiSelectDropdown from "./pages/components/multiDropDown";
 
 export default function InventoryDisplay() {
     const [filter, setFilter] = useState("");
+    const testTypes = ["ml", "pills", "mg", "other"];
+    const testCategories = ["medicine", "brace", "bandage", "other"];
     // test data, get real from DB.
     const testData: InventoryData[] = [{ name: "test", amount: 5, amountType: "ml", warningAmt: 2, tags: "" }, { name: "test2", amount: 1, amountType: "pills", warningAmt: 3, tags: "" }];
 
@@ -48,6 +52,15 @@ export default function InventoryDisplay() {
 
     return (
         <View className="flex-1 items-center justify-center">
+            <Dropdown
+                data={testTypes}
+                onSelect={(item: string) => console.log(item)}
+            />
+            <MultiSelectDropdown
+                data={testCategories}
+                onSelect={(item: string[]) => console.log(item)}
+            />
+
             <View className="w-full flex-row items-center justify-center">
                 <Text className="w-1/12 text-center">Filter:</Text>
                 <TextInput
