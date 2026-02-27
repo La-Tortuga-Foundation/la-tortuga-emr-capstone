@@ -9,7 +9,7 @@ export default function InventoryDisplay() {
     const testTypes: dataForDropDowns[] = [{ label: "ml", value: '0' }, { label: "pills", value: '1' }, { label: "mg", value: '2' }, { label: "other", value: '3' }];
     const testCategories: dataForDropDowns[] = [{ label: "medicine", value: '0' }, { label: "brace", value: '1' }, { label: "bandage", value: '2' }, { label: "other", value: '3' }];
     // test data, get real from DB.
-    const testData: InventoryData[] = [{ name: "test", amount: 5, amountType: "ml", warningAmt: 2, tags: [] }, { name: "test2", amount: 1, amountType: "pills", warningAmt: 3, tags: [] }];
+    const testData: InventoryData[] = [{ name: "test", amount: 5, amountType: { label: 'ml', value: '0' }, warningAmt: 2, tags: [] }, { name: "test2", amount: 1, amountType: { label: 'pills', value: '1' }, warningAmt: 3, tags: [] }];
 
     const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<FormData>({
         mode: "onChange",
@@ -88,7 +88,7 @@ export default function InventoryDisplay() {
                     append({
                         name: "",
                         amount: 0,
-                        amountType: "",
+                        amountType: null,
                         warningAmt: 0,
                         tags: [],
                     })

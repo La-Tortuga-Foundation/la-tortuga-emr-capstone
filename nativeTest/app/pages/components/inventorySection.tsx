@@ -28,7 +28,7 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                     rules={{ required: "Name is required" }}
                     render={({ field: { onChange, value } }) => (
                         <TextInput
-                            className="w-1/4 border border-gray-400 rounded px-3 py-2 m-2"
+                            className="w-1/3 border border-gray-400 rounded px-3 py-2 m-2"
                             value={value}
                             onChangeText={onChange}
                         />
@@ -50,21 +50,23 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                         />
                     )}
                 />
+                <View className="w-1/12 border border-gray-400 rounded px-3 py-2 m-2">
+                    <Controller
+                        control={control}
+                        name={`inventory.${index}.amountType`}
+                        render={({ field: { onChange, value } }) => (
+                            <Dropdown
+                                value={value}
+                                onChange={onChange}
+                                data={amtTypeData}
+                                labelField="label"
+                                valueField="value"
+                                style={dropdownStyle}
+                            />
+                        )}
+                    />
+                </View>
 
-                <Controller
-                    control={control}
-                    name={`inventory.${index}.amountType`}
-                    render={({ field: { onChange, value } }) => (
-                        <Dropdown
-                            value={value}
-                            onChange={onChange}
-                            data={amtTypeData}
-                            labelField="label"
-                            valueField="value"
-                            style={dropdownStyle}
-                        />
-                    )}
-                />
 
                 <Controller
                     control={control}
@@ -81,21 +83,22 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                         />
                     )}
                 />
-
-                <Controller
-                    control={control}
-                    name={`inventory.${index}.tags`}
-                    render={({ field: { onChange, value } }) => (
-                        <MultiSelect
-                            value={value}
-                            onChange={onChange}
-                            data={tagsTypeData}
-                            labelField="label"
-                            valueField="label"
-                            style={dropdownStyle}
-                        />
-                    )}
-                />
+                <View className="w-5/12 border border-gray-400 rounded px-3 py-2 m-2">
+                    <Controller
+                        control={control}
+                        name={`inventory.${index}.tags`}
+                        render={({ field: { onChange, value } }) => (
+                            <MultiSelect
+                                value={value}
+                                onChange={onChange}
+                                data={tagsTypeData}
+                                labelField="label"
+                                valueField="label"
+                                style={dropdownStyle}
+                            />
+                        )}
+                    />
+                </View>
 
                 <Pressable className="bg-red-600 p-2 m-2 rounded-lg w-1/12" onPress={() => remove(index)}>
                     <Text className="text-center">Remove</Text>

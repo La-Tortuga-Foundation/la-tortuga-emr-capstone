@@ -8,7 +8,7 @@ export interface dataForDropDowns {
 export interface InventoryData {
     name: string
     amount: number
-    amountType: string
+    amountType: dataForDropDowns | null
     warningAmt: number
     tags: string[]
 }
