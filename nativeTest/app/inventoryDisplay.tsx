@@ -1,17 +1,15 @@
-import { Pressable, Text, View, ScrollView, TextInput } from "react-native";
+import { Pressable, Text, View, ScrollView, TextInput, } from "react-native";
 import InventorySection from './pages/components/inventorySection'
-import { InventoryData, FormData } from './pages/interfaces/InventoryInterfaces'
+import { InventoryData, FormData, dataForDropDowns } from './pages/interfaces/InventoryInterfaces'
 import { useForm, useFieldArray } from "react-hook-form";
-import { useState, useMemo } from "react";
-import Dropdown from "./pages/components/dropDown"
-import MultiSelectDropdown from "./pages/components/multiDropDown";
+import { useState, useMemo, } from "react";
 
 export default function InventoryDisplay() {
     const [filter, setFilter] = useState("");
-    const testTypes = ["ml", "pills", "mg", "other"];
-    const testCategories = ["medicine", "brace", "bandage", "other"];
+    const testTypes: dataForDropDowns[] = [{ label: "ml", value: '0' }, { label: "pills", value: '1' }, { label: "mg", value: '2' }, { label: "other", value: '3' }];
+    const testCategories: dataForDropDowns[] = [{ label: "medicine", value: '0' }, { label: "brace", value: '1' }, { label: "bandage", value: '2' }, { label: "other", value: '3' }];
     // test data, get real from DB.
-    const testData: InventoryData[] = [{ name: "test", amount: 5, amountType: "ml", warningAmt: 2, tags: "" }, { name: "test2", amount: 1, amountType: "pills", warningAmt: 3, tags: "" }];
+    const testData: InventoryData[] = [{ name: "test", amount: 5, amountType: "ml", warningAmt: 2, tags: [] }, { name: "test2", amount: 1, amountType: "pills", warningAmt: 3, tags: [] }];
 
     const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<FormData>({
         mode: "onChange",
@@ -27,7 +25,7 @@ export default function InventoryDisplay() {
 
     const onSubmit = (data: FormData) => {
         // add code to put things into DB.
-        // console.log(data.inventory);
+        console.log(data.inventory);
         reset(data);
     };
 
@@ -45,22 +43,13 @@ export default function InventoryDisplay() {
             value: watchedInventory?.[index],
         })).filter(({ value }) =>
             value?.name?.toLowerCase().includes(normalizedFilter) ||
-            value?.tags?.toLowerCase().includes(normalizedFilter)
+            value?.tags?.join(' ').toLowerCase().includes(normalizedFilter)
         );
 
     }, [fields, watchedInventory, filter]);
 
     return (
         <View className="flex-1 items-center justify-center">
-            <Dropdown
-                data={testTypes}
-                onSelect={(item: string) => console.log(item)}
-            />
-            <MultiSelectDropdown
-                data={testCategories}
-                onSelect={(item: string[]) => console.log(item)}
-            />
-
             <View className="w-full flex-row items-center justify-center">
                 <Text className="w-1/12 text-center">Filter:</Text>
                 <TextInput
@@ -87,6 +76,8 @@ export default function InventoryDisplay() {
                     index={filtered.index}
                     remove={remove}
                     errors={errors}
+                    amtTypeData={testTypes}
+                    tagsTypeData={testCategories}
                 />)
                 }
             </ScrollView>
@@ -99,7 +90,7 @@ export default function InventoryDisplay() {
                         amount: 0,
                         amountType: "",
                         warningAmt: 0,
-                        tags: "",
+                        tags: [],
                     })
                 }
             >

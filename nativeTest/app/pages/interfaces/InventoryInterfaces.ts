@@ -1,11 +1,16 @@
 import { FieldError, Control, UseFieldArrayRemove } from "react-hook-form"
 
+export interface dataForDropDowns {
+    label: string
+    value: string
+}
+
 export interface InventoryData {
     name: string
     amount: number
     amountType: string
     warningAmt: number
-    tags: string
+    tags: string[]
 }
 export type FormData = {
     inventory: InventoryData[];
@@ -15,6 +20,8 @@ export type Props = {
     index: number;
     remove: UseFieldArrayRemove;
     errors: FieldError<FormData>;
+    amtTypeData: dataForDropDowns[];
+    tagsTypeData: dataForDropDowns[];
 };
 export type CheckboxProps = {
     name: string;

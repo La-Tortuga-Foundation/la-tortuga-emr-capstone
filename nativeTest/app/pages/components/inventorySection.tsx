@@ -1,9 +1,13 @@
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, Text, TextInput, View, ViewStyle } from "react-native";
 import { Controller, useWatch } from "react-hook-form";
 import { Props } from '../interfaces/InventoryInterfaces'
+import { Dropdown, MultiSelect } from 'react-native-element-dropdown';
 
+export const dropdownStyle: ViewStyle = {
+    flex: 1,
+}
 
-export default function InventorySection({ control, index, remove, errors }: Props) {
+export default function InventorySection({ control, index, remove, errors, amtTypeData, tagsTypeData }: Props) {
     const amount = useWatch({
         control,
         name: `inventory.${index}.amount`,
@@ -51,10 +55,13 @@ export default function InventorySection({ control, index, remove, errors }: Pro
                     control={control}
                     name={`inventory.${index}.amountType`}
                     render={({ field: { onChange, value } }) => (
-                        <TextInput
-                            className="w-1/12 border border-gray-400 rounded px-3 py-2 m-2"
+                        <Dropdown
                             value={value}
-                            onChangeText={onChange}
+                            onChange={onChange}
+                            data={amtTypeData}
+                            labelField="label"
+                            valueField="value"
+                            style={dropdownStyle}
                         />
                     )}
                 />
@@ -79,10 +86,13 @@ export default function InventorySection({ control, index, remove, errors }: Pro
                     control={control}
                     name={`inventory.${index}.tags`}
                     render={({ field: { onChange, value } }) => (
-                        <TextInput
-                            className="w-5/12 border border-gray-400 rounded px-3 py-2 m-2"
+                        <MultiSelect
                             value={value}
-                            onChangeText={onChange}
+                            onChange={onChange}
+                            data={tagsTypeData}
+                            labelField="label"
+                            valueField="label"
+                            style={dropdownStyle}
                         />
                     )}
                 />
