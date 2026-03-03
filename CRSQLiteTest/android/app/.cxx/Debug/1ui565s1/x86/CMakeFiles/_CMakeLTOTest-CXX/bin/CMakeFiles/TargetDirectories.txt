@@ -1,0 +1,4 @@
+C:/Users/jmrod/la-tortuga-emr-capstone/CRSQLiteTest/android/app/.cxx/Debug/1ui565s1/x86/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/foo.dir
+C:/Users/jmrod/la-tortuga-emr-capstone/CRSQLiteTest/android/app/.cxx/Debug/1ui565s1/x86/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/boo.dir
+C:/Users/jmrod/la-tortuga-emr-capstone/CRSQLiteTest/android/app/.cxx/Debug/1ui565s1/x86/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/edit_cache.dir
+C:/Users/jmrod/la-tortuga-emr-capstone/CRSQLiteTest/android/app/.cxx/Debug/1ui565s1/x86/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,24 @@
+# ninja log v5
+3	55	0	C:/Users/jmrod/la-tortuga-emr-capstone/CRSQLiteTest/android/app/.cxx/Debug/1ui565s1/x86/CMakeFiles/cmake.verify_globs	4ac959e046de765e
+53	6751	7939125994487801	OPSQLiteSpec_autolinked_build/CMakeFiles/react_codegen_OPSQLiteSpec.dir/react/renderer/components/OPSQLiteSpec/States.cpp.o	14bbc20dccef6d82
+153	6782	7939125994591375	safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir/41c2e8241ac174ae214f8cec86092be0/renderer/components/safeareacontext/States.cpp.o	4509e88c2199c91d
+29	7320	7939126000236799	OPSQLiteSpec_autolinked_build/CMakeFiles/react_codegen_OPSQLiteSpec.dir/react/renderer/components/OPSQLiteSpec/EventEmitters.cpp.o	5801f8e90a664119
+96	8012	7939126007069050	safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir/59bdfda8d9758dda8098362fb3823099/components/safeareacontext/EventEmitters.cpp.o	24fea6add17e0077
+1	8922	7939126016309722	OPSQLiteSpec_autolinked_build/CMakeFiles/react_codegen_OPSQLiteSpec.dir/OPSQLiteSpec-generated.cpp.o	53bccd0b52123d2d
+167	9181	7939126018930921	safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir/cb8c72d15f8a4f9381c8f3dd4735a4ad/codegen/jni/safeareacontext-generated.cpp.o	450397da55385e1e
+37	9643	7939126023568953	OPSQLiteSpec_autolinked_build/CMakeFiles/react_codegen_OPSQLiteSpec.dir/react/renderer/components/OPSQLiteSpec/ShadowNodes.cpp.o	ff2eb93d8e6257dc
+44	9777	7939126025034730	OPSQLiteSpec_autolinked_build/CMakeFiles/react_codegen_OPSQLiteSpec.dir/react/renderer/components/OPSQLiteSpec/Props.cpp.o	6407f1a94a9776cb
+10	9968	7939126026927742	OPSQLiteSpec_autolinked_build/CMakeFiles/react_codegen_OPSQLiteSpec.dir/react/renderer/components/OPSQLiteSpec/ComponentDescriptors.cpp.o	ed486a0f1141af86
+20	10400	7939126031181382	CMakeFiles/appmodules.dir/OnLoad.cpp.o	a4ae1390283558dd
+74	10587	7939126033154632	safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir/d76b4bd23eb0a6048303d5b2fc6d903d/safeareacontext/RNCSafeAreaViewState.cpp.o	f446ee04aa3fbc74
+106	10906	7939126036359566	safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir/59bdfda8d9758dda8098362fb3823099/components/safeareacontext/ShadowNodes.cpp.o	2cc8c2ad6bdd0e68
+120	11322	7939126040427079	safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir/41c2e8241ac174ae214f8cec86092be0/renderer/components/safeareacontext/Props.cpp.o	600a51e268ce8e8e
+84	12099	7939126048221230	safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir/00a22a25638c04a72028390807e574b2/safeareacontext/ComponentDescriptors.cpp.o	e7a757e53beee185
+62	12149	7939126048784411	safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir/d76b4bd23eb0a6048303d5b2fc6d903d/safeareacontext/RNCSafeAreaViewShadowNode.cpp.o	5b12e01c67888039
+12150	12344	7939126050790977	C:/Users/jmrod/la-tortuga-emr-capstone/CRSQLiteTest/android/app/build/intermediates/cxx/Debug/1ui565s1/obj/x86/libreact_codegen_safeareacontext.so	f6278fb79e647d59
+140	13072	7939126057923940	CMakeFiles/appmodules.dir/C_/Users/jmrod/la-tortuga-emr-capstone/CRSQLiteTest/android/app/build/generated/autolinking/src/main/jni/autolinking.cpp.o	1a7b5e63c29d94b3
+13072	13229	7939126059655880	C:/Users/jmrod/la-tortuga-emr-capstone/CRSQLiteTest/android/app/build/intermediates/cxx/Debug/1ui565s1/obj/x86/libappmodules.so	1131ad7cddd7a6bf
+4	36	0	C:/Users/jmrod/la-tortuga-emr-capstone/CRSQLiteTest/android/app/.cxx/Debug/1ui565s1/x86/CMakeFiles/cmake.verify_globs	4ac959e046de765e
+5	60	0	C:/Users/jmrod/la-tortuga-emr-capstone/CRSQLiteTest/android/app/.cxx/Debug/1ui565s1/x86/CMakeFiles/cmake.verify_globs	4ac959e046de765e
+4	37	0	C:/Users/jmrod/la-tortuga-emr-capstone/CRSQLiteTest/android/app/.cxx/Debug/1ui565s1/x86/CMakeFiles/cmake.verify_globs	4ac959e046de765e
+5	46	0	C:/Users/jmrod/la-tortuga-emr-capstone/CRSQLiteTest/android/app/.cxx/Debug/1ui565s1/x86/CMakeFiles/cmake.verify_globs	4ac959e046de765e
