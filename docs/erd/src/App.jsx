@@ -1,88 +1,72 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 
 const TEAL = "#0D9488";
-const TEAL_DARK = "#0F766E";
-const TEAL_LIGHT = "#CCFBF1";
 const AMBER = "#F59E0B";
 const SLATE = "#1E293B";
 const SLATE_MID = "#334155";
 const SLATE_LIGHT = "#64748B";
-const WHITE = "#F8FAFC";
 
 // ── Schema Definition ──────────────────────────────────────────────
 const TABLES = {
-  // LOOKUPS
-  status_types:            { section: "lookup", x: 20,  y: 20,  cols: ["statusTypeId PK","label","displayOrder","color"] },
-  gender_types:            { section: "lookup", x: 220, y: 20,  cols: ["genderTypeId PK","label"] },
-  communities:             { section: "lookup", x: 420, y: 20,  cols: ["communityId PK","name","region","...sync"] },
-  vital_types:             { section: "lookup", x: 640, y: 20,  cols: ["vitalTypeId PK","label","unit","displayOrder"] },
-  condition_types:         { section: "lookup", x: 860, y: 20,  cols: ["conditionTypeId PK","label","icd10Code","...sync"] },
-  medication_categories:   { section: "lookup", x: 1100,y: 20,  cols: ["medicationCategoryId PK","label","...sync"] },
-  medication_types:        { section: "lookup", x: 1100,y: 160, cols: ["medicationTypeId PK","name","categoryId FK","defaultUnit","...sync"] },
-  unit_types:              { section: "lookup", x: 1340,y: 20,  cols: ["unitTypeId PK","label","abbreviation"] },
-  service_types:           { section: "lookup", x: 1340,y: 160, cols: ["serviceTypeId PK","label"] },
-  dental_procedure_types:  { section: "lookup", x: 1580,y: 20,  cols: ["dentalProcedureTypeId PK","label","description"] },
-  antibiotic_types:        { section: "lookup", x: 1580,y: 160, cols: ["antibioticTypeId PK","name","defaultDosage"] },
-  inventory_categories:    { section: "lookup", x: 1820,y: 20,  cols: ["inventoryCategoryId PK","label","...sync"] },
+  // ── DYNAMIC LOOKUPS (5) ─────────────────────────────────────────
+  communities:            { section: "lookup", x: 20,   y: 20,  cols: ["communityId PK","name","region","...sync"] },
+  condition_types:        { section: "lookup", x: 240,  y: 20,  cols: ["conditionTypeId PK","label","icd10Code","...sync"] },
+  medication_categories:  { section: "lookup", x: 460,  y: 20,  cols: ["medicationCategoryId PK","label","...sync"] },
+  medication_types:       { section: "lookup", x: 460,  y: 180, cols: ["medicationTypeId PK","name","categoryId FK","defaultUnit","...sync"] },
+  inventory_categories:   { section: "lookup", x: 680,  y: 20,  cols: ["inventoryCategoryId PK","label","...sync"] },
 
-  // CORE
-  patients:                { section: "core",   x: 340, y: 390, cols: ["patientId PK","firstName","lastName","dateOfBirth","genderTypeId FK","communityId FK","phone","notes","...sync"] },
-  visits:                  { section: "core",   x: 680, y: 390, cols: ["visitId PK","patientId FK","clinicId","statusTypeId FK","shortCode","checkedInAt","closedAt","...sync"] },
-  visit_services:          { section: "core",   x: 1060, y: 390, cols: ["visitServiceId PK","visitId FK","serviceTypeId FK","...sync"] },
+  // ── CORE (3) ────────────────────────────────────────────────────
+  patients:               { section: "core",   x: 20,   y: 360, cols: ["patientId PK","firstName","lastName","dateOfBirth","genderTypeId","communityId FK","phone","notes","...sync"] },
+  visits:                 { section: "core",   x: 300,  y: 360, cols: ["visitId PK","patientId FK","clinicId","statusTypeId","shortCode","checkedInAt","closedAt","...sync"] },
+  visit_services:         { section: "core",   x: 580,  y: 360, cols: ["visitServiceId PK","visitId FK","serviceTypeId","...sync"] },
 
-  // MEDICAL
-  medical_intakes:         { section: "medical",x: 340, y: 650, cols: ["intakeId PK","visitId FK UNIQUE","chiefComplaint","nurseNotes","...sync"] },
-  visit_vitals:            { section: "medical",x: 60,  y: 860, cols: ["vitalId PK","intakeId FK","vitalTypeId FK","value","recordedAt","...sync"] },
-  visit_conditions:        { section: "medical",x: 310, y: 860, cols: ["visitConditionId PK","intakeId FK","conditionTypeId FK","isPrimary","notes","...sync"] },
-  visit_medications:       { section: "medical",x: 570, y: 860, cols: ["visitMedicationId PK","intakeId FK","medicationTypeId FK","dosage","frequency","durationDays","quantity","unitTypeId FK","...sync"] },
+  // ── MEDICAL (5) ─────────────────────────────────────────────────
+  medical_intakes:        { section: "medical", x: 20,   y: 620, cols: ["intakeId PK","visitId FK UNIQUE","reasonForVisit","symptoms","familyHistory","familyHistoryDetails","painLevel","painDuration","painLocations","painQuality","woundCare","prescriptionMeds","otcMeds","herbalRemedies","carePlan","woundCareDetails","clinicalNotes","...sync"] },
+  visit_vitals:           { section: "medical", x: 360,  y: 620, cols: ["vitalId PK","intakeId FK","vitalTypeId","value","recordedAt","...sync"] },
+  visit_conditions:       { section: "medical", x: 580,  y: 620, cols: ["visitConditionId PK","intakeId FK","conditionTypeId FK","isPrimary","notes","...sync"] },
+  visit_medications:      { section: "medical", x: 800,  y: 620, cols: ["visitMedicationId PK","intakeId FK","medicationTypeId FK","dosage","frequency","durationDays","quantity","unitTypeId","...sync"] },
+  medications_dispensed:  { section: "medical", x: 1020, y: 620, cols: ["dispensedId PK","intakeId FK","medicationGivenTypeId","quantity","unitTypeId","...sync"] },
 
-  // DENTAL
-  dental_intakes:          { section: "dental", x: 940, y: 560, cols: ["dentalIntakeId PK","visitId FK UNIQUE","chiefComplaint","dentistNotes","...sync"] },
-  dental_procedures:       { section: "dental", x: 830, y: 760, cols: ["dentalProcedureId PK","dentalIntakeId FK","procedureTypeId FK","toothNumber","notes","...sync"] },
-  dental_antibiotics:      { section: "dental", x: 1100,y: 760, cols: ["dentalAntibioticId PK","dentalIntakeId FK","antibioticTypeId FK","dosage","durationDays","...sync"] },
+  // ── DENTAL (3) ──────────────────────────────────────────────────
+  dental_intakes:         { section: "dental", x: 20,   y: 1000, cols: ["dentalIntakeId PK","visitId FK UNIQUE","chiefComplaint","painLevel","isEmergency","oralHygiene","visibleDecay","gingivalCondition","toothChart","diagnosis","treatmentPerformed","followUp","medications","dentistNotes","...sync"] },
+  dental_procedures:      { section: "dental", x: 360,  y: 1000, cols: ["dentalProcedureId PK","dentalIntakeId FK","procedureTypeId","toothNumber","notes","...sync"] },
+  dental_antibiotics:     { section: "dental", x: 600,  y: 1000, cols: ["dentalAntibioticId PK","dentalIntakeId FK","antibioticTypeId","dosage","durationDays","...sync"] },
 
-  // INVENTORY
-  inventory_items:         { section: "inventory",x: 1400,y: 340, cols: ["itemId PK","name","medicationTypeId FK","categoryId FK","quantity","unitTypeId FK","warningThreshold","expirationDate","...sync"] },
-  inventory_transactions:  { section: "inventory",x: 1400,y: 560, cols: ["transactionId PK","itemId FK","visitId FK","transactionType","quantityDelta","recordedAt","...sync"] },
+  // ── INVENTORY (2) ───────────────────────────────────────────────
+  inventory_items:        { section: "inventory", x: 900,  y: 360, cols: ["itemId PK","name","medicationTypeId FK","categoryId FK","quantity","unitTypeId","warningThreshold","expirationDate","...sync"] },
+  inventory_transactions: { section: "inventory", x: 900,  y: 620, cols: ["transactionId PK","itemId FK","visitId FK","transactionType","quantityDelta","recordedAt","...sync"] },
 
-  // SYSTEM
-  settings:                { section: "system", x: 1700,y: 560, cols: ["key PK","value","updatedAt"] },
-  collision_remaps:        { section: "system", x: 1700,y: 700, cols: ["originalPatientId PK","originalOriginTablet PK","remappedPatientId","createdAt"] },
+  // ── SYSTEM (2) ──────────────────────────────────────────────────
+  settings:               { section: "system", x: 1180, y: 360, cols: ["key PK","value","updatedAt"] },
+  collision_remaps:       { section: "system", x: 1180, y: 520, cols: ["originalPatientId PK","originalOriginTablet PK","remappedPatientId","createdAt"] },
 };
 
 const RELATIONSHIPS = [
   // patients
-  { from: "patients", to: "gender_types",      fromCol: "genderTypeId FK", label: "genderTypeId" },
-  { from: "patients", to: "communities",        fromCol: "communityId FK",  label: "communityId" },
+  { from: "patients",              to: "communities",          label: "communityId" },
   // visits
-  { from: "visits",   to: "patients",           fromCol: "patientId FK",    label: "patientId" },
-  { from: "visits",   to: "status_types",       fromCol: "statusTypeId FK", label: "statusTypeId" },
+  { from: "visits",                to: "patients",             label: "patientId" },
   // visit_services
-  { from: "visit_services", to: "visits",       fromCol: "visitId FK",      label: "visitId" },
-  { from: "visit_services", to: "service_types",fromCol: "serviceTypeId FK",label: "serviceTypeId" },
+  { from: "visit_services",        to: "visits",               label: "visitId" },
   // medical
-  { from: "medical_intakes",   to: "visits",          fromCol: "visitId FK UNIQUE", label: "visitId" },
-  { from: "visit_vitals",      to: "medical_intakes", fromCol: "intakeId FK",       label: "intakeId" },
-  { from: "visit_vitals",      to: "vital_types",     fromCol: "vitalTypeId FK",    label: "vitalTypeId" },
-  { from: "visit_conditions",  to: "medical_intakes", fromCol: "intakeId FK",       label: "intakeId" },
-  { from: "visit_conditions",  to: "condition_types", fromCol: "conditionTypeId FK",label: "conditionTypeId" },
-  { from: "visit_medications", to: "medical_intakes", fromCol: "intakeId FK",       label: "intakeId" },
-  { from: "visit_medications", to: "medication_types",fromCol: "medicationTypeId FK",label: "medicationTypeId" },
-  { from: "visit_medications", to: "unit_types",      fromCol: "unitTypeId FK",     label: "unitTypeId" },
+  { from: "medical_intakes",       to: "visits",               label: "visitId" },
+  { from: "visit_vitals",          to: "medical_intakes",      label: "intakeId" },
+  { from: "visit_conditions",      to: "medical_intakes",      label: "intakeId" },
+  { from: "visit_conditions",      to: "condition_types",      label: "conditionTypeId" },
+  { from: "visit_medications",     to: "medical_intakes",      label: "intakeId" },
+  { from: "visit_medications",     to: "medication_types",     label: "medicationTypeId" },
+  { from: "medications_dispensed", to: "medical_intakes",      label: "intakeId" },
   // dental
-  { from: "dental_intakes",    to: "visits",                  fromCol: "visitId FK UNIQUE",  label: "visitId" },
-  { from: "dental_procedures", to: "dental_intakes",          fromCol: "dentalIntakeId FK",  label: "dentalIntakeId" },
-  { from: "dental_procedures", to: "dental_procedure_types",  fromCol: "procedureTypeId FK", label: "procedureTypeId" },
-  { from: "dental_antibiotics",to: "dental_intakes",          fromCol: "dentalIntakeId FK",  label: "dentalIntakeId" },
-  { from: "dental_antibiotics",to: "antibiotic_types",        fromCol: "antibioticTypeId FK",label: "antibioticTypeId" },
+  { from: "dental_intakes",        to: "visits",               label: "visitId" },
+  { from: "dental_procedures",     to: "dental_intakes",       label: "dentalIntakeId" },
+  { from: "dental_antibiotics",    to: "dental_intakes",       label: "dentalIntakeId" },
   // inventory
-  { from: "inventory_items",        to: "inventory_categories", fromCol: "categoryId FK",       label: "categoryId" },
-  { from: "inventory_items",        to: "unit_types",            fromCol: "unitTypeId FK",       label: "unitTypeId" },
-  { from: "inventory_items",        to: "medication_types",      fromCol: "medicationTypeId FK", label: "medicationTypeId" },
-  { from: "inventory_transactions", to: "inventory_items",       fromCol: "itemId FK",           label: "itemId" },
-  { from: "inventory_transactions", to: "visits",                fromCol: "visitId FK",          label: "visitId" },
-  // medication_types -> categories
-  { from: "medication_types", to: "medication_categories", fromCol: "categoryId FK", label: "categoryId" },
+  { from: "inventory_items",       to: "inventory_categories", label: "categoryId" },
+  { from: "inventory_items",       to: "medication_types",     label: "medicationTypeId" },
+  { from: "inventory_transactions",to: "inventory_items",      label: "itemId" },
+  { from: "inventory_transactions",to: "visits",               label: "visitId" },
+  // medication_types
+  { from: "medication_types",      to: "medication_categories",label: "categoryId" },
 ];
 
 const SECTION_COLORS = {
@@ -94,16 +78,11 @@ const SECTION_COLORS = {
   system:    { bg: "#0F1010", border: "#6B7280", header: "#4B5563", badge: "#D1D5DB" },
 };
 
-const TABLE_W = 190;
+const TABLE_W = 200;
 const ROW_H = 22;
 const HEADER_H = 28;
 
 function tableHeight(t) { return HEADER_H + t.cols.length * ROW_H + 6; }
-
-function tableCenter(name) {
-  const t = TABLES[name];
-  return { x: t.x + TABLE_W / 2, y: t.y + tableHeight(t) / 2 };
-}
 
 function edgePoints(from, to) {
   const tf = TABLES[from], tt = TABLES[to];
@@ -111,8 +90,6 @@ function edgePoints(from, to) {
   const fx = tf.x + TABLE_W / 2, fy = tf.y + fh / 2;
   const tx = tt.x + TABLE_W / 2, ty = tt.y + th / 2;
   const dx = tx - fx, dy = ty - fy;
-
-  // Exit/entry sides
   let x1, y1, x2, y2;
   if (Math.abs(dx) > Math.abs(dy)) {
     x1 = dx > 0 ? tf.x + TABLE_W : tf.x;
@@ -137,8 +114,7 @@ function BezierEdge({ from, to, highlight, dim }) {
   const sec = TABLES[from].section;
   const color = SECTION_COLORS[sec].border;
   return (
-    <path
-      d={d}
+    <path d={d}
       stroke={highlight ? "#FBBF24" : dim ? "#1E293B" : color}
       strokeWidth={highlight ? 2.5 : 1.2}
       strokeOpacity={dim ? 0.2 : highlight ? 1 : 0.55}
@@ -153,59 +129,43 @@ function TableBox({ name, onHover, hovered, dimmed }) {
   const t = TABLES[name];
   const sc = SECTION_COLORS[t.section];
   const h = tableHeight(t);
-
   return (
-    <g
-      transform={`translate(${t.x},${t.y})`}
+    <g transform={`translate(${t.x},${t.y})`}
+      opacity={dimmed ? 0.15 : 1}
       onMouseEnter={() => onHover(name)}
       onMouseLeave={() => onHover(null)}
-      style={{ cursor: "pointer" }}
-    >
-      {/* Shadow */}
-      <rect x={3} y={3} width={TABLE_W} height={h} rx={5} fill="black" opacity={0.4} />
-      {/* Body */}
-      <rect
-        width={TABLE_W} height={h} rx={5}
-        fill={sc.bg}
+      style={{ cursor: "pointer" }}>
+      <rect width={TABLE_W} height={h} rx={4} fill="#0A1628"
         stroke={hovered ? "#FBBF24" : sc.border}
-        strokeWidth={hovered ? 2 : 1}
-        opacity={dimmed ? 0.25 : 1}
-      />
-      {/* Header */}
-      <rect width={TABLE_W} height={HEADER_H} rx={5} fill={sc.header} opacity={dimmed ? 0.25 : 1} />
-      <rect y={HEADER_H - 5} width={TABLE_W} height={5} fill={sc.header} opacity={dimmed ? 0.25 : 1} />
-      {/* Table name */}
-      <text
-        x={TABLE_W / 2} y={HEADER_H / 2 + 1}
-        textAnchor="middle" dominantBaseline="middle"
-        fill="white" fontSize={9.5} fontWeight="700"
-        fontFamily="'JetBrains Mono', 'Courier New', monospace"
-        opacity={dimmed ? 0.25 : 1}
-      >
+        strokeWidth={hovered ? 2 : 1} strokeOpacity={hovered ? 1 : 0.6} />
+      <rect width={TABLE_W} height={HEADER_H} rx={4} fill={sc.header} opacity={0.9} />
+      <rect y={HEADER_H - 4} width={TABLE_W} height={4} fill={sc.header} opacity={0.9} />
+      <text x={TABLE_W / 2} y={HEADER_H / 2 + 4} textAnchor="middle"
+        fontSize={9} fontWeight={700} fill="white"
+        fontFamily="'JetBrains Mono', monospace"
+        style={{ textTransform: "uppercase", letterSpacing: 0.5 }}>
         {name}
       </text>
-      {/* Columns */}
       {t.cols.map((col, i) => {
         const isPK = col.includes("PK");
         const isFK = col.includes("FK");
-        const isSys = col.startsWith("...");
-        const colName = col.replace(" PK","").replace(" FK","").replace(" UNIQUE","").replace(" ...sync","");
+        const isSync = col.startsWith("...");
+        const isJSON = ["symptoms","familyHistory","painLocations","painQuality","woundCare","toothChart"].some(j => col.startsWith(j));
+        const color = isPK ? "#6EE7B7" : isFK ? "#FCD34D" : isSync ? "#4B5563" : isJSON ? "#FB923C" : "#94A3B8";
+        const label = col.replace(" PK","").replace(" FK","").replace(" UNIQUE","");
         return (
-          <g key={col} transform={`translate(0,${HEADER_H + 3 + i * ROW_H})`} opacity={dimmed ? 0.25 : 1}>
-            <rect width={TABLE_W} height={ROW_H} fill={i % 2 === 0 ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.1)"} />
-            {isPK && <rect width={3} height={ROW_H} fill={sc.badge} />}
-            {isFK && !isPK && <rect width={3} height={ROW_H} fill="#F59E0B" />}
-            <text
-              x={9} y={ROW_H / 2 + 1}
-              dominantBaseline="middle"
-              fill={isPK ? sc.badge : isFK ? "#FCD34D" : isSys ? "#4B5563" : "#94A3B8"}
-              fontSize={8}
-              fontFamily="'JetBrains Mono', 'Courier New', monospace"
-              fontWeight={isPK ? "700" : "400"}
-              fontStyle={isSys ? "italic" : "normal"}
-            >
-              {isSys ? "○ sync metadata" : col}
+          <g key={i} transform={`translate(0,${HEADER_H + 3 + i * ROW_H})`}>
+            <rect width={TABLE_W} height={ROW_H} fill={i % 2 === 0 ? "#0D1F35" : "#0A1628"} />
+            {isPK && <rect width={3} height={ROW_H} fill="#6EE7B7" opacity={0.8} />}
+            {isFK && !isPK && <rect width={3} height={ROW_H} fill="#FCD34D" opacity={0.6} />}
+            {isJSON && <rect width={3} height={ROW_H} fill="#FB923C" opacity={0.6} />}
+            <text x={10} y={ROW_H / 2 + 4} fontSize={8.5} fill={color}
+              fontFamily="'JetBrains Mono', monospace">
+              {label}
             </text>
+            {isPK && <text x={TABLE_W - 6} y={ROW_H / 2 + 4} fontSize={7} fill="#6EE7B7" textAnchor="end" fontFamily="'JetBrains Mono', monospace" opacity={0.7}>PK</text>}
+            {isFK && !isPK && <text x={TABLE_W - 6} y={ROW_H / 2 + 4} fontSize={7} fill="#FCD34D" textAnchor="end" fontFamily="'JetBrains Mono', monospace" opacity={0.7}>FK</text>}
+            {isJSON && <text x={TABLE_W - 6} y={ROW_H / 2 + 4} fontSize={7} fill="#FB923C" textAnchor="end" fontFamily="'JetBrains Mono', monospace" opacity={0.7}>JSON</text>}
           </g>
         );
       })}
@@ -213,173 +173,140 @@ function TableBox({ name, onHover, hovered, dimmed }) {
   );
 }
 
-export default function ERD() {
+export default function ERDViewer() {
   const [hovered, setHovered] = useState(null);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(0.55);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
-  const [dragStart, setDragStart] = useState(null);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [activeSection, setActiveSection] = useState(null);
   const svgRef = useRef(null);
 
-  const CANVAS_W = 2100;
-  const CANVAS_H = 1050;
-
-  const connectedTo = useCallback((name) => {
-    if (!name) return new Set();
-    const connected = new Set([name]);
-    RELATIONSHIPS.forEach(r => {
-      if (r.from === name) connected.add(r.to);
-      if (r.to === name) connected.add(r.from);
-    });
-    return connected;
-  }, []);
-
-  const connected = hovered ? connectedTo(hovered) : null;
-
-  const onWheel = (e) => {
-    e.preventDefault();
-    const factor = e.deltaY > 0 ? 0.9 : 1.1;
-    setZoom(z => Math.max(0.2, Math.min(1.5, z * factor)));
-  };
-
-  const onMouseDown = (e) => {
-    if (e.target.closest("g[style]")) return;
-    setDragging(true);
-    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
-  };
-  const onMouseMove = (e) => {
-    if (!dragging || !dragStart) return;
-    setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
-  };
-  const onMouseUp = () => setDragging(false);
-
-  const sections = ["lookup", "core", "medical", "dental", "inventory", "system"];
+  const connected = hovered ? new Set(
+    RELATIONSHIPS
+      .filter(r => r.from === hovered || r.to === hovered)
+      .flatMap(r => [r.from, r.to])
+  ) : null;
 
   const sectionBounds = {};
-  sections.forEach(sec => {
-    const tables = Object.entries(TABLES).filter(([,t]) => t.section === sec);
-    if (!tables.length) return;
-    const xs = tables.flatMap(([,t]) => [t.x, t.x + TABLE_W]);
-    const ys = tables.flatMap(([,t]) => [t.y, t.y + tableHeight(t)]);
-    sectionBounds[sec] = {
-      x: Math.min(...xs) - 12,
-      y: Math.min(...ys) - 22,
-      w: Math.max(...xs) - Math.min(...xs) + 24,
-      h: Math.max(...ys) - Math.min(...ys) + 34,
-    };
+  Object.entries(TABLES).forEach(([, t]) => {
+    const sec = t.section;
+    const h = tableHeight(t);
+    if (!sectionBounds[sec]) {
+      sectionBounds[sec] = { x: t.x, y: t.y, x2: t.x + TABLE_W, y2: t.y + h };
+    } else {
+      sectionBounds[sec].x = Math.min(sectionBounds[sec].x, t.x);
+      sectionBounds[sec].y = Math.min(sectionBounds[sec].y, t.y);
+      sectionBounds[sec].x2 = Math.max(sectionBounds[sec].x2, t.x + TABLE_W);
+      sectionBounds[sec].y2 = Math.max(sectionBounds[sec].y2, t.y + h);
+    }
+  });
+  Object.keys(sectionBounds).forEach(sec => {
+    const b = sectionBounds[sec];
+    b.w = b.x2 - b.x + 30; b.h = b.y2 - b.y + 30;
+    b.x -= 15; b.y -= 20;
   });
 
+  const onWheel = useCallback((e) => {
+    e.preventDefault();
+    setZoom(z => Math.max(0.15, Math.min(1.5, z * (e.deltaY < 0 ? 1.1 : 0.9))));
+  }, []);
+
+  const onMouseDown = useCallback((e) => {
+    setDragging(true);
+    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+  }, [pan]);
+
+  const onMouseMove = useCallback((e) => {
+    if (!dragging) return;
+    setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+  }, [dragging, dragStart]);
+
+  const onMouseUp = useCallback(() => setDragging(false), []);
+
+  const sections = [...new Set(Object.values(TABLES).map(t => t.section))];
+  const totalTables = Object.keys(TABLES).length;
+
   return (
-    <div style={{
-      width: "100%", height: "100vh",
-      background: "#050A0F",
-      fontFamily: "'JetBrains Mono', monospace",
-      overflow: "hidden",
-      userSelect: "none",
-    }}>
+    <div style={{ width:"100%", height:"100vh", background:"#050A0F", position:"relative", overflow:"hidden", fontFamily:"'JetBrains Mono','Fira Code',monospace" }}>
       {/* Header */}
-      <div style={{
-        position: "absolute", top: 0, left: 0, right: 0, zIndex: 10,
-        padding: "10px 20px",
-        background: "rgba(5,10,15,0.92)",
-        backdropFilter: "blur(8px)",
-        borderBottom: "1px solid #0F2D2A",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: TEAL, boxShadow: `0 0 8px ${TEAL}` }} />
-          <span style={{ color: TEAL, fontSize: 13, fontWeight: 700, letterSpacing: 2 }}>LA TORTUGA EMR</span>
-          <span style={{ color: "#334155", fontSize: 11 }}>|</span>
-          <span style={{ color: "#64748B", fontSize: 11 }}>Database Schema V2  ·  Entity Relationship Diagram</span>
+      <div style={{ position:"absolute", top:0, left:0, right:0, zIndex:10, height:44,
+        background:"rgba(5,10,15,0.95)", borderBottom:"1px solid #0F2D2A",
+        display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 16px" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+          <div style={{ width:8, height:8, borderRadius:"50%", background:TEAL, boxShadow:`0 0 8px ${TEAL}` }} />
+          <span style={{ color:TEAL, fontSize:13, fontWeight:700, letterSpacing:2 }}>LA TORTUGA EMR</span>
+          <span style={{ color:"#334155", fontSize:11 }}>|</span>
+          <span style={{ color:"#64748B", fontSize:11 }}>Database Schema V2  ·  {totalTables} Tables  ·  Hybrid Architecture</span>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display:"flex", gap:8 }}>
           {sections.map(sec => (
             <button key={sec} onClick={() => setActiveSection(activeSection === sec ? null : sec)}
-              style={{
-                padding: "3px 10px", borderRadius: 4, fontSize: 9, fontWeight: 700,
+              style={{ padding:"3px 10px", borderRadius:4, fontSize:9, fontWeight:700,
                 background: activeSection === sec ? SECTION_COLORS[sec].header : "transparent",
                 color: activeSection === sec ? "white" : SECTION_COLORS[sec].badge,
-                border: `1px solid ${SECTION_COLORS[sec].border}`,
-                cursor: "pointer", letterSpacing: 1, textTransform: "uppercase",
-                opacity: activeSection && activeSection !== sec ? 0.4 : 1,
-              }}>
+                border:`1px solid ${SECTION_COLORS[sec].border}`, cursor:"pointer",
+                letterSpacing:1, textTransform:"uppercase",
+                opacity: activeSection && activeSection !== sec ? 0.4 : 1 }}>
               {sec}
             </button>
           ))}
         </div>
-        <div style={{ color: "#334155", fontSize: 10 }}>
-          scroll to zoom  ·  drag to pan  ·  hover table to trace relations
-        </div>
+        <div style={{ color:"#334155", fontSize:10 }}>scroll to zoom · drag to pan · hover to trace</div>
       </div>
 
       {/* Legend */}
-      <div style={{
-        position: "absolute", bottom: 16, left: 16, zIndex: 10,
-        background: "rgba(5,10,15,0.88)",
-        border: "1px solid #0F2D2A",
-        borderRadius: 6, padding: "8px 14px",
-        display: "flex", flexDirection: "column", gap: 5,
-      }}>
+      <div style={{ position:"absolute", bottom:16, left:16, zIndex:10,
+        background:"rgba(5,10,15,0.88)", border:"1px solid #0F2D2A",
+        borderRadius:6, padding:"8px 14px", display:"flex", flexDirection:"column", gap:5 }}>
         {[
-          { color: "#6EE7B7", label: "Primary Key (PK)" },
-          { color: "#FCD34D", label: "Foreign Key (FK)" },
-          { color: "#94A3B8", label: "Regular column" },
-          { color: "#4B5563", label: "Sync metadata" },
+          { color:"#6EE7B7", label:"Primary Key (PK)" },
+          { color:"#FCD34D", label:"Foreign Key (FK)" },
+          { color:"#FB923C", label:"JSON column" },
+          { color:"#94A3B8", label:"Regular column" },
+          { color:"#4B5563", label:"Sync metadata" },
         ].map(({ color, label }) => (
-          <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 10, height: 3, background: color, borderRadius: 2 }} />
-            <span style={{ color: "#64748B", fontSize: 9 }}>{label}</span>
+          <div key={label} style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <div style={{ width:10, height:3, background:color, borderRadius:2 }} />
+            <span style={{ color:"#64748B", fontSize:9 }}>{label}</span>
           </div>
         ))}
-        <div style={{ marginTop: 4, borderTop: "1px solid #1E293B", paddingTop: 5 }}>
+        <div style={{ marginTop:4, borderTop:"1px solid #1E293B", paddingTop:5 }}>
           {sections.map(sec => (
-            <div key={sec} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-              <div style={{ width: 8, height: 8, borderRadius: 2, background: SECTION_COLORS[sec].header }} />
-              <span style={{ color: "#64748B", fontSize: 9, textTransform: "capitalize" }}>{sec}</span>
+            <div key={sec} style={{ display:"flex", alignItems:"center", gap:6, marginBottom:3 }}>
+              <div style={{ width:8, height:8, borderRadius:2, background:SECTION_COLORS[sec].header }} />
+              <span style={{ color:"#64748B", fontSize:9, textTransform:"capitalize" }}>{sec}</span>
             </div>
           ))}
+        </div>
+        <div style={{ marginTop:4, borderTop:"1px solid #1E293B", paddingTop:5 }}>
+          <span style={{ color:"#334155", fontSize:9 }}>{totalTables} tables · static lookups → TS constants</span>
         </div>
       </div>
 
       {/* Zoom controls */}
-      <div style={{
-        position: "absolute", bottom: 16, right: 16, zIndex: 10,
-        display: "flex", gap: 6,
-      }}>
-        {[["−", 0.85], ["+", 1.15], ["⟳", "reset"]].map(([label, factor]) => (
+      <div style={{ position:"absolute", bottom:16, right:16, zIndex:10, display:"flex", gap:6 }}>
+        {[["−",0.85],["+",1.15],["⟳","reset"]].map(([label, factor]) => (
           <button key={label}
-            onClick={() => factor === "reset" ? (setZoom(0.55), setPan({ x: 0, y: 0 })) : setZoom(z => Math.max(0.2, Math.min(1.5, z * factor)))}
-            style={{
-              width: 30, height: 30, borderRadius: 4,
-              background: "#0F1A1F", border: "1px solid #0F2D2A",
-              color: TEAL, fontSize: 14, cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
+            onClick={() => factor === "reset" ? (setZoom(0.55), setPan({x:0,y:0})) : setZoom(z => Math.max(0.15, Math.min(1.5, z * factor)))}
+            style={{ width:30, height:30, borderRadius:4, background:"#0F1A1F",
+              border:"1px solid #0F2D2A", color:TEAL, fontSize:14, cursor:"pointer",
+              display:"flex", alignItems:"center", justifyContent:"center" }}>
             {label}
           </button>
         ))}
-        <div style={{
-          padding: "0 10px", height: 30, borderRadius: 4,
-          background: "#0F1A1F", border: "1px solid #0F2D2A",
-          color: "#64748B", fontSize: 10,
-          display: "flex", alignItems: "center",
-        }}>
+        <div style={{ padding:"0 10px", height:30, borderRadius:4, background:"#0F1A1F",
+          border:"1px solid #0F2D2A", color:"#64748B", fontSize:10,
+          display:"flex", alignItems:"center" }}>
           {Math.round(zoom * 100)}%
         </div>
       </div>
 
       {/* SVG Canvas */}
-      <svg
-        ref={svgRef}
-        width="100%" height="100%"
-        onWheel={onWheel}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
-        onMouseLeave={onMouseUp}
-        style={{ cursor: dragging ? "grabbing" : "grab", display: "block" }}
-      >
+      <svg ref={svgRef} width="100%" height="100%"
+        onWheel={onWheel} onMouseDown={onMouseDown} onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
+        style={{ cursor: dragging ? "grabbing" : "grab", display:"block" }}>
         <defs>
           {sections.map(sec => (
             <marker key={sec} id={`arrow-${sec}`} markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
@@ -387,9 +314,7 @@ export default function ERD() {
             </marker>
           ))}
         </defs>
-
         <g transform={`translate(${pan.x + 20},${pan.y + 50}) scale(${zoom})`}>
-          {/* Section backgrounds */}
           {sections.map(sec => {
             const b = sectionBounds[sec];
             if (!b) return null;
@@ -399,16 +324,14 @@ export default function ERD() {
               <g key={sec} opacity={dimSec ? 0.15 : 1}>
                 <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={8}
                   fill={sc.bg} stroke={sc.border} strokeWidth={1} strokeOpacity={0.4} strokeDasharray="6 4" />
-                <text x={b.x + 10} y={b.y + 14} fontSize={9} fontWeight={700}
-                  fill={sc.badge} fontFamily="'JetBrains Mono', monospace"
-                  style={{ textTransform: "uppercase", letterSpacing: 2 }}>
+                <text x={b.x+10} y={b.y+14} fontSize={9} fontWeight={700}
+                  fill={sc.badge} fontFamily="'JetBrains Mono',monospace"
+                  style={{ textTransform:"uppercase", letterSpacing:2 }}>
                   {sec}
                 </text>
               </g>
             );
           })}
-
-          {/* Edges */}
           {RELATIONSHIPS.map((r, i) => {
             const fromSec = TABLES[r.from]?.section;
             const toSec = TABLES[r.to]?.section;
@@ -417,19 +340,13 @@ export default function ERD() {
             const dim = (hovered && !highlight) || dimSec;
             return <BezierEdge key={i} from={r.from} to={r.to} highlight={highlight} dim={dim} />;
           })}
-
-          {/* Tables */}
           {Object.keys(TABLES).map(name => {
             const sec = TABLES[name].section;
             const dimSec = activeSection && sec !== activeSection;
             const dimHover = hovered && connected && !connected.has(name);
             return (
-              <TableBox
-                key={name} name={name}
-                onHover={setHovered}
-                hovered={hovered === name}
-                dimmed={dimSec || dimHover}
-              />
+              <TableBox key={name} name={name} onHover={setHovered}
+                hovered={hovered === name} dimmed={dimSec || dimHover} />
             );
           })}
         </g>
