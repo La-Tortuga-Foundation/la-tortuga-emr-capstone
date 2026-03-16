@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 
 const TEAL = "#0D9488";
-const AMBER = "#F59E0B";
 const SLATE = "#1E293B";
 const SLATE_MID = "#334155";
 const SLATE_LIGHT = "#64748B";
@@ -16,57 +15,107 @@ const TABLES = {
   inventory_categories:   { section: "lookup", x: 680,  y: 20,  cols: ["inventoryCategoryId PK","label","...sync"] },
 
   // ── CORE (3) ────────────────────────────────────────────────────
-  patients:               { section: "core",   x: 20,   y: 360, cols: ["patientId PK","firstName","lastName","dateOfBirth","genderTypeId","communityId FK","phone","notes","...sync"] },
-  visits:                 { section: "core",   x: 300,  y: 360, cols: ["visitId PK","patientId FK","clinicId","statusTypeId","shortCode","checkedInAt","closedAt","...sync"] },
-  visit_services:         { section: "core",   x: 580,  y: 360, cols: ["visitServiceId PK","visitId FK","serviceTypeId","...sync"] },
+  patients: {
+    section: "core", x: 20, y: 360,
+    cols: [
+      "patientId PK","firstName","lastName","dateOfBirth","genderTypeId",
+      "communityId FK","phone","allergies","familyHistory","familyGroupId",
+      "status","priority","arrivalOrder","notes","...sync"
+    ]
+  },
+  visits: {
+    section: "core", x: 300, y: 360,
+    cols: [
+      "visitId PK","patientId FK","clinicId","statusTypeId",
+      "reasonForVisit","reasonForVisitTag",
+      "shortCode","checkedInAt","closedAt","...sync"
+    ]
+  },
+  visit_services: {
+    section: "core", x: 580, y: 360,
+    cols: ["visitServiceId PK","visitId FK","serviceTypeId","...sync"]
+  },
 
-  // ── MEDICAL (5) ─────────────────────────────────────────────────
-  medical_intakes:        { section: "medical", x: 20,   y: 620, cols: ["intakeId PK","visitId FK UNIQUE","reasonForVisit","symptoms","familyHistory","familyHistoryDetails","painLevel","painDuration","painLocations","painQuality","woundCare","prescriptionMeds","otcMeds","herbalRemedies","carePlan","woundCareDetails","clinicalNotes","...sync"] },
-  visit_vitals:           { section: "medical", x: 360,  y: 620, cols: ["vitalId PK","intakeId FK","vitalTypeId","value","recordedAt","...sync"] },
-  visit_conditions:       { section: "medical", x: 580,  y: 620, cols: ["visitConditionId PK","intakeId FK","conditionTypeId FK","isPrimary","notes","...sync"] },
-  visit_medications:      { section: "medical", x: 800,  y: 620, cols: ["visitMedicationId PK","intakeId FK","medicationTypeId FK","dosage","frequency","durationDays","quantity","unitTypeId","...sync"] },
-  medications_dispensed:  { section: "medical", x: 1020, y: 620, cols: ["dispensedId PK","intakeId FK","medicationGivenTypeId","quantity","unitTypeId","...sync"] },
+  // ── MEDICAL (6) ─────────────────────────────────────────────────
+  admissions_assessments: {
+    section: "medical", x: 20, y: 580,
+    cols: [
+      "assessmentId PK","visitId FK",
+      "neurological","cardiovascular","respiratory",
+      "skin","gastrointestinal","genitourinary",
+      "carePlanEducation","interventions","...sync"
+    ]
+  },
+  medical_intakes: {
+    section: "medical", x: 280, y: 580,
+    cols: [
+      "intakeId PK","visitId FK UNIQUE",
+      "symptoms","painLevel","painDuration",
+      "painLocations","painQuality","quadrant",
+      "antibioticCheckbox",
+      "prescriptionMeds","otcMeds","herbalRemedies",
+      "carePlan","clinicalNotes","...sync"
+    ]
+  },
+  visit_vitals:           { section: "medical", x: 540,  y: 580, cols: ["vitalId PK","intakeId FK","vitalTypeId","value","recordedAt","...sync"] },
+  visit_conditions:       { section: "medical", x: 760,  y: 580, cols: ["visitConditionId PK","intakeId FK","conditionTypeId FK","isPrimary","notes","...sync"] },
+  visit_medications:      { section: "medical", x: 980,  y: 580, cols: ["visitMedicationId PK","intakeId FK","medicationTypeId FK","dosage","frequency","durationDays","quantity","unitTypeId","...sync"] },
+  medications_dispensed:  { section: "medical", x: 1200, y: 580, cols: ["dispensedId PK","intakeId FK","medicationGivenTypeId","quantity","unitTypeId","...sync"] },
 
   // ── DENTAL (3) ──────────────────────────────────────────────────
-  dental_intakes:         { section: "dental", x: 20,   y: 1000, cols: ["dentalIntakeId PK","visitId FK UNIQUE","chiefComplaint","painLevel","isEmergency","oralHygiene","visibleDecay","gingivalCondition","toothChart","diagnosis","treatmentPerformed","followUp","medications","dentistNotes","...sync"] },
-  dental_procedures:      { section: "dental", x: 360,  y: 1000, cols: ["dentalProcedureId PK","dentalIntakeId FK","procedureTypeId","toothNumber","notes","...sync"] },
-  dental_antibiotics:     { section: "dental", x: 600,  y: 1000, cols: ["dentalAntibioticId PK","dentalIntakeId FK","antibioticTypeId","dosage","durationDays","...sync"] },
+  dental_intakes: {
+    section: "dental", x: 20, y: 980,
+    cols: [
+      "dentalIntakeId PK","visitId FK UNIQUE",
+      "chiefComplaint","painLevel","isEmergency",
+      "oralHygiene","visibleDecay","gingivalCondition",
+      "toothChart","infectedTeeth",
+      "diagnosis","treatmentPerformed",
+      "followUp","dentistNotes","...sync"
+    ]
+  },
+  dental_procedures:      { section: "dental", x: 360,  y: 980, cols: ["dentalProcedureId PK","dentalIntakeId FK","procedureTypeId","toothNumber","notes","...sync"] },
+  dental_antibiotics:     { section: "dental", x: 600,  y: 980, cols: ["dentalAntibioticId PK","dentalIntakeId FK","antibioticTypeId","dosage","durationDays","...sync"] },
 
   // ── INVENTORY (2) ───────────────────────────────────────────────
-  inventory_items:        { section: "inventory", x: 900,  y: 360, cols: ["itemId PK","name","medicationTypeId FK","categoryId FK","quantity","unitTypeId","warningThreshold","expirationDate","...sync"] },
-  inventory_transactions: { section: "inventory", x: 900,  y: 620, cols: ["transactionId PK","itemId FK","visitId FK","transactionType","quantityDelta","recordedAt","...sync"] },
+  inventory_items:        { section: "inventory", x: 900,  y: 20,  cols: ["itemId PK","name","medicationTypeId FK","categoryId FK","quantity","unitTypeId","warningThreshold","expirationDate","...sync"] },
+  inventory_transactions: { section: "inventory", x: 900,  y: 240, cols: ["transactionId PK","itemId FK","visitId FK","transactionType","quantityDelta","recordedAt","...sync"] },
 
   // ── SYSTEM (2) ──────────────────────────────────────────────────
-  settings:               { section: "system", x: 1180, y: 360, cols: ["key PK","value","updatedAt"] },
-  collision_remaps:       { section: "system", x: 1180, y: 520, cols: ["originalPatientId PK","originalOriginTablet PK","remappedPatientId","createdAt"] },
+  settings:         { section: "system", x: 1140, y: 20,  cols: ["key PK","value","updatedAt"] },
+  collision_remaps: { section: "system", x: 1140, y: 160, cols: ["originalPatientId PK","originalOriginTablet PK","remappedPatientId","createdAt"] },
 };
 
 const RELATIONSHIPS = [
+  // lookups
+  { from: "medication_types",      to: "medication_categories",  label: "categoryId" },
   // patients
-  { from: "patients",              to: "communities",          label: "communityId" },
+  { from: "patients",              to: "communities",             label: "communityId" },
   // visits
-  { from: "visits",                to: "patients",             label: "patientId" },
+  { from: "visits",                to: "patients",                label: "patientId" },
   // visit_services
-  { from: "visit_services",        to: "visits",               label: "visitId" },
+  { from: "visit_services",        to: "visits",                  label: "visitId" },
+  // admissions
+  { from: "admissions_assessments",to: "visits",                  label: "visitId" },
   // medical
-  { from: "medical_intakes",       to: "visits",               label: "visitId" },
-  { from: "visit_vitals",          to: "medical_intakes",      label: "intakeId" },
-  { from: "visit_conditions",      to: "medical_intakes",      label: "intakeId" },
-  { from: "visit_conditions",      to: "condition_types",      label: "conditionTypeId" },
-  { from: "visit_medications",     to: "medical_intakes",      label: "intakeId" },
-  { from: "visit_medications",     to: "medication_types",     label: "medicationTypeId" },
-  { from: "medications_dispensed", to: "medical_intakes",      label: "intakeId" },
+  { from: "medical_intakes",       to: "visits",                  label: "visitId" },
+  { from: "visit_vitals",          to: "medical_intakes",         label: "intakeId" },
+  { from: "visit_conditions",      to: "medical_intakes",         label: "intakeId" },
+  { from: "visit_conditions",      to: "condition_types",         label: "conditionTypeId" },
+  { from: "visit_medications",     to: "medical_intakes",         label: "intakeId" },
+  { from: "visit_medications",     to: "medication_types",        label: "medicationTypeId" },
+  { from: "medications_dispensed", to: "medical_intakes",         label: "intakeId" },
   // dental
-  { from: "dental_intakes",        to: "visits",               label: "visitId" },
-  { from: "dental_procedures",     to: "dental_intakes",       label: "dentalIntakeId" },
-  { from: "dental_antibiotics",    to: "dental_intakes",       label: "dentalIntakeId" },
+  { from: "dental_intakes",        to: "visits",                  label: "visitId" },
+  { from: "dental_procedures",     to: "dental_intakes",          label: "dentalIntakeId" },
+  { from: "dental_antibiotics",    to: "dental_intakes",          label: "dentalIntakeId" },
+  // system
+  { from: "collision_remaps",      to: "patients",                label: "originalPatientId" },
   // inventory
-  { from: "inventory_items",       to: "inventory_categories", label: "categoryId" },
-  { from: "inventory_items",       to: "medication_types",     label: "medicationTypeId" },
-  { from: "inventory_transactions",to: "inventory_items",      label: "itemId" },
-  { from: "inventory_transactions",to: "visits",               label: "visitId" },
-  // medication_types
-  { from: "medication_types",      to: "medication_categories",label: "categoryId" },
+  { from: "inventory_items",       to: "inventory_categories",    label: "categoryId" },
+  { from: "inventory_items",       to: "medication_types",        label: "medicationTypeId" },
+  { from: "inventory_transactions",to: "inventory_items",         label: "itemId" },
+  { from: "inventory_transactions",to: "visits",                  label: "visitId" },
 ];
 
 const SECTION_COLORS = {
@@ -150,7 +199,7 @@ function TableBox({ name, onHover, hovered, dimmed }) {
         const isPK = col.includes("PK");
         const isFK = col.includes("FK");
         const isSync = col.startsWith("...");
-        const isJSON = ["symptoms","familyHistory","painLocations","painQuality","woundCare","toothChart"].some(j => col.startsWith(j));
+        const isJSON = ["symptoms","painLocations","painQuality","woundCare","toothChart","infectedTeeth","neurological","cardiovascular","respiratory","skin","gastrointestinal","genitourinary"].some(j => col.startsWith(j));
         const color = isPK ? "#6EE7B7" : isFK ? "#FCD34D" : isSync ? "#4B5563" : isJSON ? "#FB923C" : "#94A3B8";
         const label = col.replace(" PK","").replace(" FK","").replace(" UNIQUE","");
         return (
