@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { router } from "expo-router";
-import { Pressable, Text, TextInput, View, Image} from "react-native";
+import { Pressable, Text, TextInput, View, Image, TouchableOpacity} from "react-native";
 import "../global.css";
-
+import { useRouter } from 'expo-router';
 export default function Login() {
 
   const [email, setEmail] = useState('');
   const [pwd, setPwd] = useState('');
+  const router = useRouter();
 
   const handleLogin = () => {
     if (!email || !pwd){
@@ -49,7 +50,9 @@ export default function Login() {
         >
           <Text className="text-white text-center font-bold">Log in</Text>
         </Pressable>
-
+          <TouchableOpacity onPress={() => router.push('/db-test' as any)}>
+          <Text>DB Test</Text>
+          </TouchableOpacity>
       </View>
 
     </View>
