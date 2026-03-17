@@ -1,13 +1,7 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useState } from 'react';
-import { Button } from '@react-navigation/elements';
+import { Checkbox } from "./pages/components/checkBox";
+import { Controller, useForm } from "react-hook-form";
 
 interface MedicalHistorySchema {
   title: string;
@@ -114,10 +108,65 @@ interface MedicalHistorySchema {
   };
 };
 
+interface MedData {
+  // Medical conditions
+  asthma: boolean,
+  diabetes: boolean,
+  cancer: boolean,
+  hypertension: boolean,
+  allergies: boolean,
+  otherCondition: String,
+
+  // General symptoms
+  headache: boolean,
+  blurredVision: boolean,
+  depressedFeelings: boolean,
+  difficultySleeping: boolean,
+  nausea: boolean,
+
+  // Digestive
+  vomiting: boolean,
+  diarrhea: boolean,
+  constipation: boolean,
+  stomachPain: boolean,
+  heartburn: boolean,
+
+  // Genitourinary
+  frequency: boolean,
+  urgency: boolean,
+  burning: boolean,
+  pain: boolean,
+  genSores: boolean,
+  discharge: boolean,
+
+  // Musculoskeletal
+  arthritis: boolean,
+  brokenBones: boolean,
+  sprains: boolean,
+
+  // ENT
+  soreThroat: boolean,
+  entItching: boolean,
+  earPain: boolean,
+  entAllergies: boolean,
+
+  // Cardiopulmonary
+  difficultyBreathing: boolean,
+  chestPain: boolean,
+  highBloodPressurePalpitations: boolean,
+  coughingBlood: boolean,
+
+  // Skin
+  skinSores: boolean,
+  rashes: boolean,
+  unusualSpots: boolean,
+  skinItching: boolean,
+}
+
 
 type Language = "en" | "sp";
 
-const medicalHistory:MedicalHistorySchema = {
+const medicalHistory: MedicalHistorySchema = {
   title: "Medical History",
   name: "Name",
 
@@ -228,7 +277,7 @@ const medicalHistory:MedicalHistorySchema = {
       "Health goals and care plan:"
   }
 };
-const medicalHistoryEs:MedicalHistorySchema = {
+const medicalHistoryEs: MedicalHistorySchema = {
   title: "Historia Médica",
   name: "Nombre",
 
@@ -348,37 +397,158 @@ const languages: Record<Language, MedicalHistorySchema> = {
 export default function medicalForm() {
 
   const [language, setLanguage] = useState<Language>("en");
+  const [test, setTest] = useState('');
 
   const switchLanguage = () => {
     setLanguage((prev) => (prev === "en" ? "sp" : "en"));
   };
+  const { control, handleSubmit } = useForm<MedData>({
+    defaultValues: {
+      // Medical conditions
+      asthma: false,
+      diabetes: false,
+      cancer: false,
+      hypertension: false,
+      allergies: false,
+      otherCondition: "",
+
+      // General symptoms
+      headache: false,
+      blurredVision: false,
+      depressedFeelings: false,
+      difficultySleeping: false,
+      nausea: false,
+
+      // Digestive
+      vomiting: false,
+      diarrhea: false,
+      constipation: false,
+      stomachPain: false,
+      heartburn: false,
+
+      // Genitourinary
+      frequency: false,
+      urgency: false,
+      burning: false,
+      pain: false,
+      genSores: false,
+      discharge: false,
+
+      // Musculoskeletal
+      arthritis: false,
+      brokenBones: false,
+      sprains: false,
+
+      // ENT
+      soreThroat: false,
+      entItching: false,
+      earPain: false,
+      entAllergies: false,
+
+      // Cardiopulmonary
+      difficultyBreathing: false,
+      chestPain: false,
+      highBloodPressurePalpitations: false,
+      coughingBlood: false,
+
+      // Skin
+      skinSores: false,
+      rashes: false,
+      unusualSpots: false,
+      skinItching: false,
+    },
+  });
+  const onSubmit = (data: MedData) => {
+    // console.log(data);
+  };
 
   const textBox = languages[language];
   return (
-    <>
-    <ThemedText>{textBox.name}</ThemedText>
-    <ThemedText>{textBox.title}</ThemedText>
+    <ScrollView className="flex-1 items-center">
+      <Pressable className="bg-blue-600 p-4 rounded-lg w-full m-2" onPressIn={switchLanguage}><Text className="text-white text-center">Switch Languages</Text></Pressable>
+      <View className="flex-row items-center space-x-2">
+        <Text className="text-base text-black my-4">{textBox.name}</Text>
+        <TextInput
+          placeholder={textBox.name}
+          className="border border-gray-400 rounded px-3 py-2 w-48"
+          value={test}
+          onChangeText={setTest}
+        />
+      </View>
 
-    <Button onPressIn={switchLanguage}>Switch Languages</Button>
-    </>
+      <Text>{textBox.title}</Text>
+
+      <Text className="my-4">{textBox.familyHistory.description}</Text>
+      <Checkbox name="asthma" control={control} label={textBox.familyHistory.asthma} />
+      <Checkbox name="diabetes" control={control} label={textBox.familyHistory.diabetes} />
+      <Checkbox name="cancer" control={control} label={textBox.familyHistory.cancer} />
+      <Checkbox name="hypertension" control={control} label={textBox.familyHistory.hypertension} />
+      <Checkbox name="allergies" control={control} label={textBox.familyHistory.allergies} />
+      <Text className="text-gray-700">{textBox.familyHistory.otherCondition}</Text>
+      <Controller
+        control={control}
+        name={`otherCondition`}
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            className="border border-gray-400 rounded px-3 py-2 m-2"
+            value={value.toString()}
+            onChangeText={onChange}
+          />
+        )}
+      />
+
+      <Text className="my-2">{textBox.personalProblems.description}</Text>
+      <Text className="my-2">{textBox.personalProblems.neurological.sectionTitle}</Text>
+      <Checkbox name="headache" control={control} label={textBox.personalProblems.neurological.headache} />
+      <Checkbox name="blurredVision" control={control} label={textBox.personalProblems.neurological.blurredVision} />
+      <Checkbox name="depressedFeelings" control={control} label={textBox.personalProblems.neurological.depressedFeelings} />
+      <Checkbox name="difficultySleeping" control={control} label={textBox.personalProblems.neurological.difficultySleeping} />
+
+      <Text className="my-2">{textBox.personalProblems.digestive.sectionTitle}</Text>
+      <Checkbox name="nausea" control={control} label={textBox.personalProblems.digestive.nausea} />
+      <Checkbox name="vomiting" control={control} label={textBox.personalProblems.digestive.vomiting} />
+      <Checkbox name="diarrhea" control={control} label={textBox.personalProblems.digestive.diarrhea} />
+      <Checkbox name="constipation" control={control} label={textBox.personalProblems.digestive.constipation} />
+      <Checkbox name="stomachPain" control={control} label={textBox.personalProblems.digestive.stomachPain} />
+      <Checkbox name="heartburn" control={control} label={textBox.personalProblems.digestive.heartburn} />
+
+      <Text className="my-2">{textBox.personalProblems.genitourinary.sectionTitle}</Text>
+      <Checkbox name="frequency" control={control} label={textBox.personalProblems.genitourinary.frequency} />
+      <Checkbox name="urgency" control={control} label={textBox.personalProblems.genitourinary.urgency} />
+      <Checkbox name="burning" control={control} label={textBox.personalProblems.genitourinary.burning} />
+      <Checkbox name="pain" control={control} label={textBox.personalProblems.genitourinary.pain} />
+      <Checkbox name="genSores" control={control} label={textBox.personalProblems.genitourinary.sores} />
+      <Checkbox name="discharge" control={control} label={textBox.personalProblems.genitourinary.discharge} />
+
+      <Text className="my-2">{textBox.personalProblems.musculoskeletal.sectionTitle}</Text>
+      <Checkbox name="arthritis" control={control} label={textBox.personalProblems.musculoskeletal.arthritis} />
+      <Checkbox name="brokenBones" control={control} label={textBox.personalProblems.musculoskeletal.brokenBones} />
+      <Checkbox name="sprains" control={control} label={textBox.personalProblems.musculoskeletal.sprains} />
+
+      <Text className="my-2">{textBox.personalProblems.ent.sectionTitle}</Text>
+      <Checkbox name="soreThroat" control={control} label={textBox.personalProblems.ent.soreThroat} />
+      <Checkbox name="entAllergies" control={control} label={textBox.personalProblems.ent.allergies} />
+      <Checkbox name="entItching" control={control} label={textBox.personalProblems.ent.itching} />
+      <Checkbox name="earPain" control={control} label={textBox.personalProblems.ent.earPain} />
+
+      <Text className="my-2">{textBox.personalProblems.cardiopulmonary.sectionTitle}</Text>
+      <Checkbox name="difficultyBreathing" control={control} label={textBox.personalProblems.cardiopulmonary.difficultyBreathing} />
+      <Checkbox name="chestPain" control={control} label={textBox.personalProblems.cardiopulmonary.chestPain} />
+      <Checkbox name="highBloodPressurePalpitations" control={control} label={textBox.personalProblems.cardiopulmonary.highBloodPressurePalpitations} />
+      <Checkbox name="coughingBlood" control={control} label={textBox.personalProblems.cardiopulmonary.coughingBlood} />
+
+      <Text className="my-2">{textBox.personalProblems.skin.sectionTitle}</Text>
+      <Checkbox name="skinSores" control={control} label={textBox.personalProblems.skin.sores} />
+      <Checkbox name="rashes" control={control} label={textBox.personalProblems.skin.rashes} />
+      <Checkbox name="unusualSpots" control={control} label={textBox.personalProblems.skin.unusualSpots} />
+      <Checkbox name="skinItching" control={control} label={textBox.personalProblems.skin.itching} />
+
+      <Pressable
+        className="bg-green-600 p-4 rounded-lg w-1/2"
+        onPress={handleSubmit(onSubmit)}
+      >
+        <Text className="text-white text-center">Submit</Text>
+      </Pressable>
+    </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
