@@ -56,6 +56,10 @@ export default function Login() {
           <TouchableOpacity onPress={() => router.push('/db-test' as any)}>
           <Text>DB Test</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => router.push('/inventoryDisplay' as any)}>
+          <Text>inv access</Text>
+          </TouchableOpacity>
       </View>
 
     </View>
