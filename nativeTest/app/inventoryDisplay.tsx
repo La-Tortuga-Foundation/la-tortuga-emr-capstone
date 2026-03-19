@@ -3,13 +3,15 @@ import InventorySection from './pages/components/inventorySection'
 import { InventoryData, FormData, dataForDropDowns } from './pages/interfaces/InventoryInterfaces'
 import { useForm, useFieldArray } from "react-hook-form";
 import { useState, useMemo, } from "react";
+import { query } from '../src/services/db';
 
 export default function InventoryDisplay() {
     const [filter, setFilter] = useState("");
     const testTypes: dataForDropDowns[] = [{ label: "ml", value: '0' }, { label: "pills", value: '1' }, { label: "mg", value: '2' }, { label: "other", value: '3' }];
     const testCategories: dataForDropDowns[] = [{ label: "medicine", value: '0' }, { label: "brace", value: '1' }, { label: "bandage", value: '2' }, { label: "other", value: '3' }];
     // test data, get real from DB.
-    const testData: InventoryData[] = [{ name: "test", amount: 5, amountType: { label: 'ml', value: '0' }, warningAmt: 2, tags: [] }, { name: "test2", amount: 1, amountType: { label: 'pills', value: '1' }, warningAmt: 3, tags: [] }];
+    const testData: InventoryData[] = query('SELECT * FROM inventory_items').map((invRow) => {return { name: invRow.name, amount: invRow.quantity, amountType: { label: testTypes.find((element) => invRow.unitTypeId === element.value).label, value: invRow.unitTypeId }, warningAmt: invRow.warningThreshold, tags: invRow.categoryId }});
+    //[{ name: "test", amount: 5, amountType: { label: 'ml', value: '0' }, warningAmt: 2, tags: [] }, { name: "test2", amount: 1, amountType: { label: 'pills', value: '1' }, warningAmt: 3, tags: [] }];
 
     const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<FormData>({
         mode: "onChange",
@@ -61,11 +63,11 @@ export default function InventoryDisplay() {
             </View>
 
             <View className="flex-row w-full">
-                <Text className="w-1/4 text-center">Name</Text>
+                <Text className="w-1/5 text-center">Name</Text>
                 <Text className="w-1/12 text-center">Amount</Text>
-                <Text className="w-1/12 text-center">Amount Type</Text>
-                <Text className="w-1/12 text-center">Warning Amount</Text>
-                <Text className="w-5/12 text-center">Tags</Text>
+                <Text className="w-1/6 text-center">Amt Type</Text>
+                <Text className="w-1/11 text-center">Warning Amt</Text>
+                <Text className="w-3/12 text-center">Tags</Text>
                 <Text className="w-1/12 text-center">Delete</Text>
             </View>
 

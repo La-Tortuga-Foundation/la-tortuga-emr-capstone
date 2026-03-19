@@ -28,7 +28,7 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                     rules={{ required: "Name is required" }}
                     render={({ field: { onChange, value } }) => (
                         <TextInput
-                            className="w-1/3 border border-gray-400 rounded px-3 py-2 m-2"
+                            className="w-1/6 border border-gray-400 rounded px-3 py-2 m-2"
                             value={value}
                             onChangeText={onChange}
                         />
@@ -50,7 +50,7 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                         />
                     )}
                 />
-                <View className="w-1/12 border border-gray-400 rounded px-3 py-2 m-2">
+                <View className="w-1/6 border border-gray-400 rounded px-3 py-2 m-2">
                     <Controller
                         control={control}
                         name={`inventory.${index}.amountType`}
@@ -73,7 +73,7 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                     name={`inventory.${index}.warningAmt`}
                     render={({ field: { onChange, value } }) => (
                         <TextInput
-                            className="w-1/12 border border-gray-400 rounded px-3 py-2 m-2"
+                            className="border border-gray-400 rounded px-3 py-2 m-2"
                             value={value?.toString() ?? ""}
                             onChangeText={(text) => {
                                 const numeric = text.replace(/[^0-9.]/g, "").replace(/^0+([0-9])/, "$1");
@@ -83,7 +83,7 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                         />
                     )}
                 />
-                <View className="w-5/12 border border-gray-400 rounded px-3 py-2 m-2">
+                <View className="w-3/12 border border-gray-400 rounded px-3 py-2 m-2">
                     <Controller
                         control={control}
                         name={`inventory.${index}.tags`}
@@ -100,7 +100,7 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                     />
                 </View>
 
-                <Pressable className="bg-red-600 p-2 m-2 rounded-lg w-1/12" onPress={() => remove(index)}>
+                <Pressable className="bg-red-600 p-2 m-2 rounded-lg" onPress={() => remove(index)}>
                     <Text className="text-center">Remove</Text>
                 </Pressable>
             </View>
