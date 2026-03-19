@@ -366,7 +366,7 @@ function createInventoryTables(): void {
       itemId            TEXT PRIMARY KEY NOT NULL,
       name              TEXT NOT NULL,
       medicationTypeId  TEXT REFERENCES medication_types(medicationTypeId),
-      categoryId        TEXT REFERENCES inventory_categories(inventoryCategoryId),
+      categoryId        TEXT,
       quantity          REAL DEFAULT 0,
       unitTypeId        TEXT,
       warningThreshold  REAL DEFAULT 0,
@@ -375,6 +375,7 @@ function createInventoryTables(): void {
       __crsql_version   INTEGER DEFAULT 0
     );
   `);
+  //REFERENCES inventory_categories(inventoryCategoryId) removed from categoryId to allow a list of tags instead of a single category.
 
   run(`
     CREATE TABLE IF NOT EXISTS inventory_transactions (
