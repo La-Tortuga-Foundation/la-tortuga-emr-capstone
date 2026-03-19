@@ -3,6 +3,9 @@ import { router } from "expo-router";
 import { Pressable, Text, TextInput, View, Image, TouchableOpacity} from "react-native";
 import "../global.css";
 import { useRouter } from 'expo-router';
+import { createPatient } from '../src/services/patients';
+import { createVisit } from '../src/services/visits';
+import { initDB } from '../src/services/db';
 export default function Login() {
 
   const [email, setEmail] = useState('');

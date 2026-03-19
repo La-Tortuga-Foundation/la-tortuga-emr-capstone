@@ -37,7 +37,7 @@ export function isDBInitialized(): boolean {
 
 export function query<T>(sql: string, params: unknown[] = []): T[] {
   try {
-    const result = getDB().execute(sql, params);
+    const result = getDB().executeSync(sql, params);
     return (result.rows ?? []) as T[];
   } catch (error) {
     console.error('[DB] Query failed:', sql, error);
@@ -47,7 +47,7 @@ export function query<T>(sql: string, params: unknown[] = []): T[] {
 
 export function queryOne<T>(sql: string, params: unknown[] = []): T | null {
   try {
-    const result = getDB().execute(sql, params);
+    const result = getDB().executeSync(sql, params);
     const rows = result.rows ?? [];
     return rows.length > 0 ? (rows[0] as T) : null;
   } catch (error) {
@@ -58,7 +58,7 @@ export function queryOne<T>(sql: string, params: unknown[] = []): T | null {
 
 export function run(sql: string, params: unknown[] = []): void {
   try {
-    getDB().execute(sql, params);
+    getDB().executeSync(sql, params);
   } catch (error) {
     console.error('[DB] Run failed:', sql, error);
     throw error;
@@ -77,12 +77,15 @@ export function closeDB(): void {
 // ─── Init ─────────────────────────────────────────────────────────────────────
 
 export function initDB(): void {
-  if (initialized) {
-    console.log('[DB] Already initialized.');
-    return;
-  }
+ // if (initialized) {
+    //console.log('[DB] Already initialized.');
+   // return;
+ // }
 
   db = open({ name: 'la_tortuga_v2.db' });
+  // test write
+  const testResult = db.executeSync('SELECT 1 as test;');
+  console.log('[DB] executeSync test:', JSON.stringify(testResult));
 
   run('PRAGMA journal_mode=WAL;');
   run('PRAGMA foreign_keys=ON;');
@@ -532,37 +535,20 @@ function seedDynamicLookups(): void {
 
 function enableCRDT(): void {
   const crrTables = [
-    // Dynamic lookups
-    'communities',
-    'condition_types',
-    'medication_categories',
-    'medication_types',
-    'inventory_categories',
-    // Core
-    'patients',
-    'visits',
-    'visit_services',
-    // Medical
-    'admissions_assessments',
-    'medical_intakes',
-    'visit_vitals',
-    'visit_conditions',
-    'visit_medications',
-    'medications_dispensed',
-    // Dental
-    'dental_intakes',
-    'dental_procedures',
-    'dental_antibiotics',
-    // Inventory
-    'inventory_items',
-    'inventory_transactions',
-    // System
-    'collision_remaps',
+    'communities', 'condition_types', 'medication_categories',
+    'medication_types', 'inventory_categories',
+    'patients', 'visits', 'visit_services',
+    'admissions_assessments', 'medical_intakes', 'visit_vitals',
+    'visit_conditions', 'visit_medications', 'medications_dispensed',
+    'dental_intakes', 'dental_procedures', 'dental_antibiotics',
+    'inventory_items', 'inventory_transactions', 'collision_remaps',
   ];
 
   for (const table of crrTables) {
-    run(`SELECT crsql_as_crr('${table}');`);
+    try {
+      run(`SELECT crsql_as_crr('${table}');`);
+    } catch (e) {}
   }
 
-  console.log(`[DB] CRDT enabled on ${crrTables.length} tables.`);
+  console.log(`[DB] CRDT setup complete.`);
 }

@@ -1,52 +1,77 @@
-import { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { useState, useEffect } from "react";
+import { ScrollView, Text, View, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
+import { getWaitingRoomVisits } from "../../src/services/visits";
+import { initDB } from "../../src/services/db";
 import "../../global.css";
-import PatientList from "./components/PatientList";
-import { Patient } from "../pages/interfaces/PatientInterface";
-
 
 export default function Home() {
+  const router = useRouter();
+  const [visits, setVisits] = useState<any[]>([]);
 
-    const addPatient = () => {
-        const newPatient: Patient = {
-            id: Date.now().toString(), // random id
-            name: "New Patient",
-            priority: "high",
-            checkInTime: patients.length + 1,
-            status: "waiting"
-        };
-        setPatients([...patients, newPatient])
+  const loadVisits = () => {
+    try {
+      initDB();
+      const data = getWaitingRoomVisits();
+      console.log('[HOME] Visits from DB:', JSON.stringify(data));
+      setVisits(data);
+    } catch (e: any) {
+      console.error('[HOME] Failed to load visits:', e.message);
     }
+  };
 
-    //      list,   function to update patients
-    const [patients, setPatients] = useState<Patient[]>([
-        { id: "1", name: "John Smith", priority: "high", checkInTime: 1, status: "waiting" },
-        { id: "2", name: "Maria Lopez", priority: "high", checkInTime: 2, status: "waiting" },
-        { id: "3", name: "Adam Brown", priority: "low", checkInTime: 3, status: "waiting" },
-        { id: "4", name: "Lisa Wong", priority: "medium", checkInTime: 4, status: "waiting" },
-    ]);
+  useEffect(() => { loadVisits(); }, []);
 
+  return (
+    <View className="flex-1 bg-gray-100">
+      <TouchableOpacity
+        className="bg-green-700 p-3 m-2 rounded-lg"
+        onPress={() => router.push('/pages/checkIn' as any)}
+      >
+        <Text className="text-white text-center font-bold">+ New Patient Check-In</Text>
+      </TouchableOpacity>
 
-    return (
-        <View className="flex-1 bg-gray-100">
-            <Text
-                className="bg-blue-300 p-3 m-2 rounded-lg text-center"
-                onPress={addPatient}
-            >
-                Add New Patient
-            </Text>
-            <View className="flex-1 bg-gray-100 items-center justify-center">
-                <View className="h-5/6 w-full max-w-md px-4 bg-white rounded-lg">
-                    <Text className="text-2xl font-bold mb-1 p-2 text-center">
-                        Waiting Room
+      <TouchableOpacity
+        className="bg-gray-300 p-2 m-2 rounded-lg"
+        onPress={loadVisits}
+      >
+        <Text className="text-center text-gray-700">Refresh</Text>
+      </TouchableOpacity>
+
+      <View className="flex-1 bg-gray-100 items-center justify-center">
+        <View className="h-5/6 w-full max-w-md px-4 bg-white rounded-lg">
+          <Text className="text-2xl font-bold mb-1 p-2 text-center">
+            Waiting Room
+          </Text>
+          <ScrollView>
+            {visits.length === 0 ? (
+              <Text className="text-center text-gray-400 mt-4">No patients in queue</Text>
+            ) : (
+              visits.map((v: any) => (
+                <View
+                  key={v.visitId}
+                  className={`p-3 mb-2 rounded-lg border ${v.statusTypeId === 'urgent' ? 'bg-red-100 border-red-500' : 'bg-white border-gray-200'}`}
+                >
+                  <View className="flex-row justify-between items-center">
+                    <Text className={`font-bold text-base ${v.statusTypeId === 'urgent' ? 'text-red-800' : 'text-gray-800'}`}>
+                      {v.firstName} {v.lastName}
                     </Text>
-                    <ScrollView>
-                    <PatientList patients={patients} />
-                    </ScrollView>
+                    {v.statusTypeId === 'urgent' && (
+                      <Text className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                        URGENT
+                      </Text>
+                    )}
+                  </View>
+                  <Text className="text-gray-500 text-sm mt-1">{v.reasonForVisit}</Text>
+                  {v.reasonForVisitTag && v.statusTypeId === 'urgent' && (
+                    <Text className="text-red-600 text-xs mt-1">⚠ {v.reasonForVisitTag}</Text>
+                  )}
                 </View>
-            </View>
-
+              ))
+            )}
+          </ScrollView>
         </View>
-    );
+      </View>
+    </View>
+  );
 }
-
