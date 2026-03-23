@@ -3,7 +3,7 @@ import { ScrollView, Text, View, TextInput, TouchableOpacity, Alert } from "reac
 import { useRouter } from "expo-router";
 import { createPatient } from "../../src/services/patients";
 import { createVisit } from "../../src/services/visits";
-import { initDB, query } from "../../src/services/db";
+import { initDB } from "../../src/services/db";
 import "../../global.css";
 
 const URGENT_QUESTIONS = [
