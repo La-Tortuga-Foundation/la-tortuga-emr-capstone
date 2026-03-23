@@ -3,14 +3,30 @@ import InventorySection from './pages/components/inventorySection'
 import { InventoryData, FormData, dataForDropDowns } from './pages/interfaces/InventoryInterfaces'
 import { useForm, useFieldArray } from "react-hook-form";
 import { useState, useMemo, } from "react";
-import { query } from '../src/services/db';
+import { query, run } from '../src/services/db';
+
+type InventoryRow = {
+    itemId: string;
+    name: string;
+    quantity: number;
+    unitTypeId: string;
+    warningThreshold: number;
+    categoryId: string;
+};
+
+function generateId(): string {
+    return 'p-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+}
+const testTypes: dataForDropDowns[] = [{ label: "ml", value: '0' }, { label: "pills", value: '1' }, { label: "mg", value: '2' }, { label: "other", value: '3' }];
+const testCategories: dataForDropDowns[] = [{ label: "medicine", value: '0' }, { label: "brace", value: '1' }, { label: "bandage", value: '2' }, { label: "other", value: '3' }];
+function queryInv() {
+    return query<InventoryRow>('SELECT * FROM inventory_items').map((invRow) => { return { itemId: invRow.itemId, name: invRow.name, amount: invRow.quantity, amountType: { label: testTypes.find((element) => invRow.unitTypeId === element.value)?.label ?? "", value: invRow.unitTypeId }, warningAmt: invRow.warningThreshold, tags: invRow.categoryId.split(" ") } });
+}
 
 export default function InventoryDisplay() {
     const [filter, setFilter] = useState("");
-    const testTypes: dataForDropDowns[] = [{ label: "ml", value: '0' }, { label: "pills", value: '1' }, { label: "mg", value: '2' }, { label: "other", value: '3' }];
-    const testCategories: dataForDropDowns[] = [{ label: "medicine", value: '0' }, { label: "brace", value: '1' }, { label: "bandage", value: '2' }, { label: "other", value: '3' }];
     // test data, get real from DB.
-    const testData: InventoryData[] = query('SELECT * FROM inventory_items').map((invRow) => {return { name: invRow.name, amount: invRow.quantity, amountType: { label: testTypes.find((element) => invRow.unitTypeId === element.value).label, value: invRow.unitTypeId }, warningAmt: invRow.warningThreshold, tags: invRow.categoryId }});
+    const testData: InventoryData[] = queryInv();
     //[{ name: "test", amount: 5, amountType: { label: 'ml', value: '0' }, warningAmt: 2, tags: [] }, { name: "test2", amount: 1, amountType: { label: 'pills', value: '1' }, warningAmt: 3, tags: [] }];
 
     const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<FormData>({
@@ -28,6 +44,18 @@ export default function InventoryDisplay() {
     const onSubmit = (data: FormData) => {
         // add code to put things into DB.
         console.log(data.inventory);
+        for (const { name, amount, amountType, warningAmt, tags } of data.inventory.filter(e => e.itemId == null)) {
+            run(
+                `INSERT OR IGNORE INTO inventory_items(itemId, name, medicationTypeId, categoryId, quantity, unitTypeId, warningThreshold) VALUES(?, ?, ?, ?, ?, ?, ?);`,
+                [generateId(), name, null, tags.join(" "), amount, amountType?.value, warningAmt]
+            );
+        }
+        for (const { itemId, name, amount, amountType, warningAmt, tags } of data.inventory.filter(e => e.itemId != null)) {
+            run(
+                `INSERT OR IGNORE INTO inventory_items(itemId, name, medicationTypeId, categoryId, quantity, unitTypeId, warningThreshold) VALUES(?, ?, ?, ?, ?, ?, ?);`,
+                [itemId, name, null, tags.join(" "), amount, amountType?.value, warningAmt]
+            );
+        }
         reset(data);
     };
 
@@ -88,6 +116,7 @@ export default function InventoryDisplay() {
                 className="bg-blue-600 p-4 rounded-lg w-full m-2"
                 onPress={() =>
                     append({
+                        itemId: null,
                         name: "",
                         amount: 0,
                         amountType: null,

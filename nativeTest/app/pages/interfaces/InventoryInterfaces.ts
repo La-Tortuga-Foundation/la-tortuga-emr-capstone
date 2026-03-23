@@ -6,6 +6,7 @@ export interface dataForDropDowns {
 }
 
 export interface InventoryData {
+    itemId: string | null
     name: string
     amount: number
     amountType: dataForDropDowns | null
