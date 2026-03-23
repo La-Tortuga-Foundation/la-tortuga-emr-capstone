@@ -2,12 +2,13 @@ import { Pressable, Text, TextInput, View, ViewStyle } from "react-native";
 import { Controller, useWatch } from "react-hook-form";
 import { Props } from '../interfaces/InventoryInterfaces'
 import { Dropdown, MultiSelect } from 'react-native-element-dropdown';
+import { run } from '../../../src/services/db';
 
 export const dropdownStyle: ViewStyle = {
     flex: 1,
 }
 
-export default function InventorySection({ control, index, remove, errors, amtTypeData, tagsTypeData }: Props) {
+export default function InventorySection({ control, index, remove, errors, amtTypeData, tagsTypeData, deleteArray }: Props) {
     const amount = useWatch({
         control,
         name: `inventory.${index}.amount`,
@@ -16,6 +17,10 @@ export default function InventorySection({ control, index, remove, errors, amtTy
     const warningAmt = useWatch({
         control,
         name: `inventory.${index}.warningAmt`,
+    });
+    const itemId = useWatch({
+        control,
+        name: `inventory.${index}.itemId`,
     });
 
 
@@ -100,7 +105,7 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                     />
                 </View>
 
-                <Pressable className="bg-red-600 p-2 m-2 rounded-lg" onPress={() => remove(index)}>
+                <Pressable className="bg-red-600 p-2 m-2 rounded-lg" onPress={() => {if(itemId){deleteArray.push(itemId);} remove(index)}}>
                     <Text className="text-center">Remove</Text>
                 </Pressable>
             </View>

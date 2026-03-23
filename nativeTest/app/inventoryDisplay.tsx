@@ -2,7 +2,7 @@ import { Pressable, Text, View, ScrollView, TextInput, } from "react-native";
 import InventorySection from './pages/components/inventorySection'
 import { InventoryData, FormData, dataForDropDowns } from './pages/interfaces/InventoryInterfaces'
 import { useForm, useFieldArray } from "react-hook-form";
-import { useState, useMemo, } from "react";
+import { useState, useMemo, useRef, } from "react";
 import { query, run } from '../src/services/db';
 
 type InventoryRow = {
@@ -17,15 +17,17 @@ type InventoryRow = {
 function generateId(): string {
     return 'p-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 }
+// test data, get real from DB.
 const testTypes: dataForDropDowns[] = [{ label: "ml", value: '0' }, { label: "pills", value: '1' }, { label: "mg", value: '2' }, { label: "other", value: '3' }];
 const testCategories: dataForDropDowns[] = [{ label: "medicine", value: '0' }, { label: "brace", value: '1' }, { label: "bandage", value: '2' }, { label: "other", value: '3' }];
 function queryInv() {
-    return query<InventoryRow>('SELECT * FROM inventory_items').map((invRow) => { return { itemId: invRow.itemId, name: invRow.name, amount: invRow.quantity, amountType: { label: testTypes.find((element) => invRow.unitTypeId === element.value)?.label ?? "", value: invRow.unitTypeId }, warningAmt: invRow.warningThreshold, tags: invRow.categoryId.split(" ") } });
+    return query<InventoryRow>('SELECT * FROM inventory_items')
+        .map((invRow) => { return { itemId: invRow.itemId, name: invRow.name, amount: invRow.quantity, amountType: { label: testTypes.find((element) => invRow.unitTypeId === element.value)?.label ?? "", value: invRow.unitTypeId }, warningAmt: invRow.warningThreshold, tags: invRow.categoryId.split(" ") } });
 }
 
 export default function InventoryDisplay() {
+    const deleteArray = useRef<string[]>([]);
     const [filter, setFilter] = useState("");
-    // test data, get real from DB.
     const testData: InventoryData[] = queryInv();
     //[{ name: "test", amount: 5, amountType: { label: 'ml', value: '0' }, warningAmt: 2, tags: [] }, { name: "test2", amount: 1, amountType: { label: 'pills', value: '1' }, warningAmt: 3, tags: [] }];
 
@@ -42,8 +44,9 @@ export default function InventoryDisplay() {
     });
 
     const onSubmit = (data: FormData) => {
-        // add code to put things into DB.
-        console.log(data.inventory);
+        for (const itemId of deleteArray.current) {
+            run("DELETE FROM inventory_items WHERE itemId = ?", [itemId]);
+        }
         for (const { name, amount, amountType, warningAmt, tags } of data.inventory.filter(e => e.itemId == null)) {
             run(
                 `INSERT OR IGNORE INTO inventory_items(itemId, name, medicationTypeId, categoryId, quantity, unitTypeId, warningThreshold) VALUES(?, ?, ?, ?, ?, ?, ?);`,
@@ -52,8 +55,21 @@ export default function InventoryDisplay() {
         }
         for (const { itemId, name, amount, amountType, warningAmt, tags } of data.inventory.filter(e => e.itemId != null)) {
             run(
-                `INSERT OR IGNORE INTO inventory_items(itemId, name, medicationTypeId, categoryId, quantity, unitTypeId, warningThreshold) VALUES(?, ?, ?, ?, ?, ?, ?);`,
-                [itemId, name, null, tags.join(" "), amount, amountType?.value, warningAmt]
+                `UPDATE inventory_items
+                SET name = ?,
+                categoryId = ?,
+                quantity = ?,
+                unitTypeId = ?,
+                warningThreshold = ?
+                WHERE itemId = ?;`,
+                [
+                    name,
+                    tags.join(" "),
+                    amount,
+                    amountType?.value,
+                    warningAmt,
+                    itemId
+                ]
             );
         }
         reset(data);
@@ -108,6 +124,7 @@ export default function InventoryDisplay() {
                     errors={errors}
                     amtTypeData={testTypes}
                     tagsTypeData={testCategories}
+                    deleteArray={deleteArray.current}
                 />)
                 }
             </ScrollView>
@@ -137,7 +154,7 @@ export default function InventoryDisplay() {
 
                 <Pressable
                     className="bg-red-600 p-4 rounded-lg w-1/2"
-                    onPress={() => reset()}
+                    onPress={() => { reset() }}
                 >
                     <Text className="text-white text-center">Cancel</Text>
                 </Pressable>

@@ -23,6 +23,7 @@ export type Props = {
     errors: FieldError<FormData>;
     amtTypeData: dataForDropDowns[];
     tagsTypeData: dataForDropDowns[];
+    deleteArray: RefObject<string[]>;
 };
 export type CheckboxProps = {
     name: string;
