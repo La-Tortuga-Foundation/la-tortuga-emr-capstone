@@ -29,8 +29,7 @@ export function createPatient(
     ]
   );
 
-  const verify = query(`SELECT * FROM patients WHERE patientId = ?`, [patientId]);
-  console.log('[PATIENTS] Verify after insert:', JSON.stringify(verify));
+
 
   console.log(`[PATIENTS] Created patient ${patientId} — ${firstName} ${lastName}`);
   return patientId;

@@ -77,15 +77,14 @@ export function closeDB(): void {
 // ─── Init ─────────────────────────────────────────────────────────────────────
 
 export function initDB(): void {
- // if (initialized) {
-    //console.log('[DB] Already initialized.');
-   // return;
- // }
+  if (initialized) {
+    console.log('[DB] Already initialized.');
+    return;
+  }
+
+  initialized = true;
 
   db = open({ name: 'la_tortuga_v2.db' });
-  // test write
-  const testResult = db.executeSync('SELECT 1 as test;');
-  console.log('[DB] executeSync test:', JSON.stringify(testResult));
 
   run('PRAGMA journal_mode=WAL;');
   run('PRAGMA foreign_keys=ON;');
@@ -98,11 +97,17 @@ export function initDB(): void {
   createSystemTables();
   createIndexes();
   seedDynamicLookups();
-  enableCRDT();
 
-  initialized = true;
+  try {
+    enableCRDT();
+  } catch (e) {
+    console.warn('[DB] cr-sqlite not available.');
+  }
+
   console.log('[DB] Initialized — 21 tables ready.');
 }
+
+
 
 // ─── Dynamic Lookup Tables ────────────────────────────────────────────────────
 

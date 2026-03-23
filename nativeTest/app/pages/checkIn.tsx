@@ -57,9 +57,7 @@ export default function CheckIn() {
       const patientId = createPatient(firstName, lastName, dob);
       console.log('[CHECKIN] Patient ID:', patientId);
 
-        // verify it saved
-       const check = query('SELECT * FROM patients WHERE patientId = ?', [patientId]);
-       console.log('[CHECKIN] Patient in DB:', JSON.stringify(check));
+      
 
       createVisit(patientId, selectedReason, selectedReason, isUrgent, urgentTrigger);
 
