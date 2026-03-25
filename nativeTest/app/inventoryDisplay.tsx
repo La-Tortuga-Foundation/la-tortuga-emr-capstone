@@ -1,31 +1,25 @@
-import { Pressable, Text, View, ScrollView, TextInput, } from "react-native";
+import { Pressable, Text, View, ScrollView, TextInput } from "react-native";
 import InventorySection from './pages/components/inventorySection'
-import { InventoryData, FormData, dataForDropDowns } from './pages/interfaces/InventoryInterfaces'
+import { InventoryData, FormData, dataForDropDowns, InventoryRow, CategoryRow } from './pages/interfaces/InventoryInterfaces'
 import { useForm, useFieldArray } from "react-hook-form";
-import { useState, useMemo, useRef, } from "react";
+import { useState, useMemo, useRef } from "react";
 import { query, run } from '../src/services/db';
-
-type InventoryRow = {
-    itemId: string;
-    name: string;
-    quantity: number;
-    unitTypeId: string;
-    warningThreshold: number;
-    categoryId: string;
-};
 
 function generateId(): string {
     return 'p-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 }
 // test data, get real from DB.
 const testTypes: dataForDropDowns[] = [{ label: "ml", value: '0' }, { label: "pills", value: '1' }, { label: "mg", value: '2' }, { label: "other", value: '3' }];
-const testCategories: dataForDropDowns[] = [{ label: "medicine", value: '0' }, { label: "brace", value: '1' }, { label: "bandage", value: '2' }, { label: "other", value: '3' }];
-function queryInv() {
-    return query<InventoryRow>('SELECT * FROM inventory_items')
-        .map((invRow) => { return { itemId: invRow.itemId, name: invRow.name, amount: invRow.quantity, amountType: { label: testTypes.find((element) => invRow.unitTypeId === element.value)?.label ?? "", value: invRow.unitTypeId }, warningAmt: invRow.warningThreshold, tags: invRow.categoryId.split(" ") } });
-}
+// const testCategories: dataForDropDowns[] = [{ label: "medicine", value: '0' }, { label: "brace", value: '1' }, { label: "bandage", value: '2' }, { label: "other", value: '3' }];
 
 export default function InventoryDisplay() {
+    const testCategories: dataForDropDowns[] = query<CategoryRow>('SELECT * FROM inventory_categories')
+        .map((invRow) => { return { label: invRow.label, value: invRow.inventoryCategoryId } });
+    function queryInv() {
+        return query<InventoryRow>('SELECT * FROM inventory_items')
+            .map((invRow) => { return { itemId: invRow.itemId, name: invRow.name, amount: invRow.quantity, amountType: { label: testTypes.find((element) => invRow.unitTypeId === element.value)?.label ?? "", value: invRow.unitTypeId }, warningAmt: invRow.warningThreshold, category: { label: testCategories.find((element) => invRow.categoryId === element.value)?.label ?? "", value: invRow.categoryId } } });
+    }
+
     const deleteArray = useRef<string[]>([]);
     const [filter, setFilter] = useState("");
     const testData: InventoryData[] = queryInv();
@@ -47,13 +41,13 @@ export default function InventoryDisplay() {
         for (const itemId of deleteArray.current) {
             run("DELETE FROM inventory_items WHERE itemId = ?", [itemId]);
         }
-        for (const { name, amount, amountType, warningAmt, tags } of data.inventory.filter(e => e.itemId == null)) {
+        for (const { name, amount, amountType, warningAmt, category } of data.inventory.filter(e => e.itemId == null)) {
             run(
                 `INSERT OR IGNORE INTO inventory_items(itemId, name, medicationTypeId, categoryId, quantity, unitTypeId, warningThreshold) VALUES(?, ?, ?, ?, ?, ?, ?);`,
-                [generateId(), name, null, tags.join(" "), amount, amountType?.value, warningAmt]
+                [generateId(), name, null, category?.value, amount, amountType?.value, warningAmt]
             );
         }
-        for (const { itemId, name, amount, amountType, warningAmt, tags } of data.inventory.filter(e => e.itemId != null)) {
+        for (const { itemId, name, amount, amountType, warningAmt, category } of data.inventory.filter(e => e.itemId != null)) {
             run(
                 `UPDATE inventory_items
                 SET name = ?,
@@ -64,7 +58,7 @@ export default function InventoryDisplay() {
                 WHERE itemId = ?;`,
                 [
                     name,
-                    tags.join(" "),
+                    category?.value,
                     amount,
                     amountType?.value,
                     warningAmt,
@@ -88,19 +82,20 @@ export default function InventoryDisplay() {
             index,
             value: watchedInventory?.[index],
         })).filter(({ value }) =>
-            value?.name?.toLowerCase().includes(normalizedFilter) ||
-            value?.tags?.join(' ').toLowerCase().includes(normalizedFilter)
+            value?.name.toLowerCase().includes(normalizedFilter) ||
+            value?.category?.label.toLowerCase().includes(normalizedFilter)
         );
 
     }, [fields, watchedInventory, filter]);
 
     return (
         <View className="flex-1 items-center justify-center">
+            <Text className="w-full text-center">Inventory System</Text>
             <View className="w-full flex-row items-center justify-center">
                 <Text className="w-1/12 text-center">Filter:</Text>
                 <TextInput
                     className="w-10/12 border border-gray-400 rounded px-3 py-2 m-2"
-                    placeholder="Filter by name, and tags"
+                    placeholder="Filter by name, and category"
                     value={filter}
                     onChangeText={setFilter}
                 />
@@ -111,7 +106,7 @@ export default function InventoryDisplay() {
                 <Text className="w-1/12 text-center">Amount</Text>
                 <Text className="w-1/6 text-center">Amt Type</Text>
                 <Text className="w-1/11 text-center">Warning Amt</Text>
-                <Text className="w-3/12 text-center">Tags</Text>
+                <Text className="w-3/12 text-center">Category</Text>
                 <Text className="w-1/12 text-center">Delete</Text>
             </View>
 
@@ -137,8 +132,8 @@ export default function InventoryDisplay() {
                         name: "",
                         amount: 0,
                         amountType: null,
-                        warningAmt: 0,
-                        tags: [],
+                        warningAmt: 2,
+                        category: null,
                     })
                 }
             >

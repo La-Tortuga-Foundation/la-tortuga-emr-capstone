@@ -11,7 +11,7 @@ export interface InventoryData {
     amount: number
     amountType: dataForDropDowns | null
     warningAmt: number
-    tags: string[]
+    category: dataForDropDowns | null
 }
 export type FormData = {
     inventory: InventoryData[];
@@ -30,3 +30,15 @@ export type CheckboxProps = {
     control: Control<any>;
     label: string;
 };
+export type InventoryRow = {
+    itemId: string;
+    name: string;
+    quantity: number;
+    unitTypeId: string;
+    warningThreshold: number;
+    categoryId: string;
+};
+export type CategoryRow = {
+    inventoryCategoryId: string;
+    label: string;
+}

@@ -1,8 +1,7 @@
 import { Pressable, Text, TextInput, View, ViewStyle } from "react-native";
 import { Controller, useWatch } from "react-hook-form";
 import { Props } from '../interfaces/InventoryInterfaces'
-import { Dropdown, MultiSelect } from 'react-native-element-dropdown';
-import { run } from '../../../src/services/db';
+import { Dropdown } from 'react-native-element-dropdown';
 
 export const dropdownStyle: ViewStyle = {
     flex: 1,
@@ -36,6 +35,7 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                             className="w-1/6 border border-gray-400 rounded px-3 py-2 m-2"
                             value={value}
                             onChangeText={onChange}
+                            multiline={true}
                         />
                     )}
                 />
@@ -91,21 +91,21 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                 <View className="w-3/12 border border-gray-400 rounded px-3 py-2 m-2">
                     <Controller
                         control={control}
-                        name={`inventory.${index}.tags`}
+                        name={`inventory.${index}.category`}
                         render={({ field: { onChange, value } }) => (
-                            <MultiSelect
+                            <Dropdown
                                 value={value}
                                 onChange={onChange}
                                 data={tagsTypeData}
                                 labelField="label"
-                                valueField="label"
+                                valueField="value"
                                 style={dropdownStyle}
                             />
                         )}
                     />
                 </View>
 
-                <Pressable className="bg-red-600 p-2 m-2 rounded-lg" onPress={() => {if(itemId){deleteArray.push(itemId);} remove(index)}}>
+                <Pressable className="bg-red-600 p-2 m-2 rounded-lg" onPress={() => { if (itemId) { deleteArray.push(itemId); } remove(index) }}>
                     <Text className="text-center">Remove</Text>
                 </Pressable>
             </View>
