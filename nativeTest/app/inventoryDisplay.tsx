@@ -1,12 +1,12 @@
 import { Pressable, Text, View, ScrollView, TextInput } from "react-native";
 import InventorySection from './pages/components/inventorySection'
-import { InventoryData, FormData, dataForDropDowns, InventoryRow, CategoryRow, MedRow } from './pages/interfaces/InventoryInterfaces'
+import { InventoryData, FormData, dataForDropDowns, InventoryRow, CategoryRow, MedRow, logRow } from './pages/interfaces/InventoryInterfaces'
 import { useForm, useFieldArray } from "react-hook-form";
 import { useState, useMemo, useRef } from "react";
 import { query, run } from '../src/services/db';
 
 function generateId(): string {
-    return 'p-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    return 'i-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 }
 // test data, get real from DB.
 const testTypes: dataForDropDowns[] = [{ label: "ml", value: '0' }, { label: "tablet", value: '1' }, { label: "mg", value: '2' }, { label: "g", value: '3' }, { label: "other", value: '4' }];
@@ -77,6 +77,19 @@ export default function InventoryDisplay() {
                 ]
             );
         }
+        const logData = query<logRow>('SELECT logMessage FROM logs');
+        for (const { name } of data.inventory.filter(e => e.warningAmt >= e.amount)) {
+            const newLogMessage = name + " is low";
+            if (!logData.find(e => { return e.logMessage === newLogMessage })) {
+                console.error(newLogMessage);
+                run(
+                    `INSERT OR IGNORE INTO logs(logMessage) VALUES(?);`,
+                    [newLogMessage]
+                );
+            }
+
+        }
+
         reset(data);
     };
 

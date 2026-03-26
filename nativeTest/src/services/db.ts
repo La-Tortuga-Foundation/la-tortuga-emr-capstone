@@ -419,6 +419,16 @@ function createSystemTables(): void {
     );
   `);
 
+  // ─── Log Tables ────────────────────────────────────────────────────────────
+  run(`
+    CREATE TABLE IF NOT EXISTS logs (
+      logMessage  TEXT PRIMARY KEY NOT NULL,
+      __crsql_siteid  TEXT,
+      __crsql_version INTEGER DEFAULT 0
+    );
+  `);
+
+
   console.log('[DB] System tables created.');
 }
 
@@ -451,14 +461,14 @@ function createIndexes(): void {
 function seedDynamicLookups(): void {
   // Medication categories
   const medCategories = [
-    ['mc-antibiotic',    'Antibiotic'],
-    ['mc-analgesic',     'Analgesic'],
-    ['mc-antacid',       'Antacid'],
+    ['mc-antibiotic', 'Antibiotic'],
+    ['mc-analgesic', 'Analgesic'],
+    ['mc-antacid', 'Antacid'],
     ['mc-antiparasitic', 'Antiparasitic'],
-    ['mc-antifungal',    'Antifungal'],
-    ['mc-topical',       'Topical'],
-    ['mc-vitamin',       'Vitamin / Supplement'],
-    ['mc-other',         'Other'],
+    ['mc-antifungal', 'Antifungal'],
+    ['mc-topical', 'Topical'],
+    ['mc-vitamin', 'Vitamin / Supplement'],
+    ['mc-other', 'Other'],
   ];
   for (const [id, label] of medCategories) {
     run(
@@ -469,22 +479,22 @@ function seedDynamicLookups(): void {
 
   // Medication types
   const medTypes = [
-    ['mt-amoxicillin',    'Amoxicillin',    'mc-antibiotic',    'mg'],
-    ['mt-azithromycin',   'Azithromycin',   'mc-antibiotic',    'mg'],
-    ['mt-metronidazole',  'Metronidazole',  'mc-antibiotic',    'mg'],
-    ['mt-ciprofloxacin',  'Ciprofloxacin',  'mc-antibiotic',    'mg'],
-    ['mt-doxycycline',    'Doxycycline',    'mc-antibiotic',    'mg'],
-    ['mt-ibuprofen',      'Ibuprofen',      'mc-analgesic',     'mg'],
-    ['mt-acetaminophen',  'Acetaminophen',  'mc-analgesic',     'mg'],
-    ['mt-naproxen',       'Naproxen',       'mc-analgesic',     'mg'],
-    ['mt-pepcid',         'Pepcid',         'mc-antacid',       'mg'],
-    ['mt-omeprazole',     'Omeprazole',     'mc-antacid',       'mg'],
-    ['mt-muscle-cream',   'Muscle Cream',   'mc-topical',       'g'],
-    ['mt-silver-nitrate', 'Silver Nitrate', 'mc-topical',       'ml'],
-    ['mt-albendazole',    'Albendazole',    'mc-antiparasitic', 'mg'],
-    ['mt-ivermectin',     'Ivermectin',     'mc-antiparasitic', 'mg'],
-    ['mt-fluconazole',    'Fluconazole',    'mc-antifungal',    'mg'],
-    ['mt-vitamins',       'Multivitamins',  'mc-vitamin',       'tablet'],
+    ['mt-amoxicillin', 'Amoxicillin', 'mc-antibiotic', 'mg'],
+    ['mt-azithromycin', 'Azithromycin', 'mc-antibiotic', 'mg'],
+    ['mt-metronidazole', 'Metronidazole', 'mc-antibiotic', 'mg'],
+    ['mt-ciprofloxacin', 'Ciprofloxacin', 'mc-antibiotic', 'mg'],
+    ['mt-doxycycline', 'Doxycycline', 'mc-antibiotic', 'mg'],
+    ['mt-ibuprofen', 'Ibuprofen', 'mc-analgesic', 'mg'],
+    ['mt-acetaminophen', 'Acetaminophen', 'mc-analgesic', 'mg'],
+    ['mt-naproxen', 'Naproxen', 'mc-analgesic', 'mg'],
+    ['mt-pepcid', 'Pepcid', 'mc-antacid', 'mg'],
+    ['mt-omeprazole', 'Omeprazole', 'mc-antacid', 'mg'],
+    ['mt-muscle-cream', 'Muscle Cream', 'mc-topical', 'g'],
+    ['mt-silver-nitrate', 'Silver Nitrate', 'mc-topical', 'ml'],
+    ['mt-albendazole', 'Albendazole', 'mc-antiparasitic', 'mg'],
+    ['mt-ivermectin', 'Ivermectin', 'mc-antiparasitic', 'mg'],
+    ['mt-fluconazole', 'Fluconazole', 'mc-antifungal', 'mg'],
+    ['mt-vitamins', 'Multivitamins', 'mc-vitamin', 'tablet'],
   ];
   for (const [id, name, catId, unit] of medTypes) {
     run(
@@ -495,10 +505,10 @@ function seedDynamicLookups(): void {
 
   // Inventory categories
   const invCategories = [
-    ['ic-medication',  'Medication'],
-    ['ic-supply',      'Medical Supply'],
-    ['ic-dental',      'Dental Supply'],
-    ['ic-equipment',   'Equipment'],
+    ['ic-medication', 'Medication'],
+    ['ic-supply', 'Medical Supply'],
+    ['ic-dental', 'Dental Supply'],
+    ['ic-equipment', 'Equipment'],
   ];
   for (const [id, label] of invCategories) {
     run(
@@ -509,20 +519,20 @@ function seedDynamicLookups(): void {
 
   // Condition types
   const conditions = [
-    ['ct-hypertension',      'Hypertension',           'I10'],
-    ['ct-diabetes-t2',       'Type 2 Diabetes',         'E11'],
-    ['ct-gerd',              'GERD / Gastritis',        'K21'],
-    ['ct-uti',               'UTI',                     'N39.0'],
-    ['ct-respiratory-inf',   'Respiratory Infection',   'J06.9'],
-    ['ct-skin-infection',    'Skin Infection',           'L08.9'],
-    ['ct-parasitic',         'Parasitic Infection',     'B82.9'],
-    ['ct-anxiety',           'Anxiety',                 'F41.1'],
-    ['ct-depression',        'Depression',              'F32.9'],
-    ['ct-musculoskeletal',   'Musculoskeletal Pain',    'M79.3'],
-    ['ct-wound',             'Wound / Laceration',      'T14.0'],
-    ['ct-dental-caries',     'Dental Caries',           'K02'],
-    ['ct-dental-abscess',    'Dental Abscess',          'K04.7'],
-    ['ct-other',             'Other',                   null],
+    ['ct-hypertension', 'Hypertension', 'I10'],
+    ['ct-diabetes-t2', 'Type 2 Diabetes', 'E11'],
+    ['ct-gerd', 'GERD / Gastritis', 'K21'],
+    ['ct-uti', 'UTI', 'N39.0'],
+    ['ct-respiratory-inf', 'Respiratory Infection', 'J06.9'],
+    ['ct-skin-infection', 'Skin Infection', 'L08.9'],
+    ['ct-parasitic', 'Parasitic Infection', 'B82.9'],
+    ['ct-anxiety', 'Anxiety', 'F41.1'],
+    ['ct-depression', 'Depression', 'F32.9'],
+    ['ct-musculoskeletal', 'Musculoskeletal Pain', 'M79.3'],
+    ['ct-wound', 'Wound / Laceration', 'T14.0'],
+    ['ct-dental-caries', 'Dental Caries', 'K02'],
+    ['ct-dental-abscess', 'Dental Abscess', 'K04.7'],
+    ['ct-other', 'Other', null],
   ];
   for (const [id, label, icd10] of conditions) {
     run(
@@ -553,7 +563,7 @@ function enableCRDT(): void {
   for (const table of crrTables) {
     try {
       run(`SELECT crsql_as_crr('${table}');`);
-    } catch (e) {}
+    } catch (e) { }
   }
 
   console.log(`[DB] CRDT setup complete.`);

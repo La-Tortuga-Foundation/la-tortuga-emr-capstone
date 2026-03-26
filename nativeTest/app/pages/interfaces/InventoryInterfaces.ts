@@ -50,3 +50,6 @@ export type MedRow = {
     categoryId: string;
     defaultUnit: string;
 }
+export type logRow = {
+    logMessage: string;
+}
