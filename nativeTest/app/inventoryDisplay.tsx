@@ -1,6 +1,6 @@
 import { Pressable, Text, View, ScrollView, TextInput } from "react-native";
 import InventorySection from './pages/components/inventorySection'
-import { InventoryData, FormData, dataForDropDowns, InventoryRow, CategoryRow } from './pages/interfaces/InventoryInterfaces'
+import { InventoryData, FormData, dataForDropDowns, InventoryRow, CategoryRow, MedRow } from './pages/interfaces/InventoryInterfaces'
 import { useForm, useFieldArray } from "react-hook-form";
 import { useState, useMemo, useRef } from "react";
 import { query, run } from '../src/services/db';
@@ -9,7 +9,7 @@ function generateId(): string {
     return 'p-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 }
 // test data, get real from DB.
-const testTypes: dataForDropDowns[] = [{ label: "ml", value: '0' }, { label: "pills", value: '1' }, { label: "mg", value: '2' }, { label: "other", value: '3' }];
+const testTypes: dataForDropDowns[] = [{ label: "ml", value: '0' }, { label: "tablet", value: '1' }, { label: "mg", value: '2' }, { label: "g", value: '3' }, { label: "other", value: '4' }];
 // const testCategories: dataForDropDowns[] = [{ label: "medicine", value: '0' }, { label: "brace", value: '1' }, { label: "bandage", value: '2' }, { label: "other", value: '3' }];
 
 export default function InventoryDisplay() {
@@ -17,12 +17,22 @@ export default function InventoryDisplay() {
         .map((invRow) => { return { label: invRow.label, value: invRow.inventoryCategoryId } });
     function queryInv() {
         return query<InventoryRow>('SELECT * FROM inventory_items')
-            .map((invRow) => { return { itemId: invRow.itemId, name: invRow.name, amount: invRow.quantity, amountType: { label: testTypes.find((element) => invRow.unitTypeId === element.value)?.label ?? "", value: invRow.unitTypeId }, warningAmt: invRow.warningThreshold, category: { label: testCategories.find((element) => invRow.categoryId === element.value)?.label ?? "", value: invRow.categoryId } } });
+            .map((invRow) => { return { itemId: invRow.itemId, name: invRow.name, amount: invRow.quantity, amountType: { label: testTypes.find((element) => invRow.unitTypeId === element.value)?.label ?? "", value: invRow.unitTypeId }, warningAmt: invRow.warningThreshold, category: { label: testCategories.find((element) => invRow.categoryId === element.value)?.label ?? "", value: invRow.categoryId }, medicationTypeId: invRow.medicationTypeId } });
     }
 
     const deleteArray = useRef<string[]>([]);
     const [filter, setFilter] = useState("");
     const testData: InventoryData[] = queryInv();
+    if (testData.length === 0) {
+        const testtest = query<MedRow>('SELECT * FROM medication_types');
+        testtest.forEach(e => {
+            run(
+                `INSERT OR IGNORE INTO inventory_items(itemId, name, medicationTypeId, categoryId, quantity, unitTypeId, warningThreshold) VALUES(?, ?, ?, ?, ?, ?, ?);`,
+                [e.medicationTypeId, e.name, e.medicationTypeId, e.categoryId, 0, e.defaultUnit, 2]
+            );
+        });
+
+    }
     //[{ name: "test", amount: 5, amountType: { label: 'ml', value: '0' }, warningAmt: 2, tags: [] }, { name: "test2", amount: 1, amountType: { label: 'pills', value: '1' }, warningAmt: 3, tags: [] }];
 
     const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<FormData>({
@@ -41,6 +51,7 @@ export default function InventoryDisplay() {
         for (const itemId of deleteArray.current) {
             run("DELETE FROM inventory_items WHERE itemId = ?", [itemId]);
         }
+        deleteArray.current = [];
         for (const { name, amount, amountType, warningAmt, category } of data.inventory.filter(e => e.itemId == null)) {
             run(
                 `INSERT OR IGNORE INTO inventory_items(itemId, name, medicationTypeId, categoryId, quantity, unitTypeId, warningThreshold) VALUES(?, ?, ?, ?, ?, ?, ?);`,
@@ -134,6 +145,7 @@ export default function InventoryDisplay() {
                         amountType: null,
                         warningAmt: 2,
                         category: null,
+                        medicationTypeId: null
                     })
                 }
             >

@@ -21,6 +21,10 @@ export default function InventorySection({ control, index, remove, errors, amtTy
         control,
         name: `inventory.${index}.itemId`,
     });
+    const medTypeId = useWatch({
+        control,
+        name: `inventory.${index}.itemId`,
+    })
 
 
     return (
@@ -36,6 +40,7 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                             value={value}
                             onChangeText={onChange}
                             multiline={true}
+                            editable={!medTypeId}
                         />
                     )}
                 />
@@ -104,10 +109,11 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                         )}
                     />
                 </View>
-
-                <Pressable className="bg-red-600 p-2 m-2 rounded-lg" onPress={() => { if (itemId) { deleteArray.push(itemId); } remove(index) }}>
-                    <Text className="text-center">Remove</Text>
-                </Pressable>
+                {!medTypeId &&
+                    <Pressable className="bg-red-600 p-2 m-2 rounded-lg" onPress={() => { if (itemId) { deleteArray.push(itemId); } remove(index) }}>
+                        <Text className="text-center">Remove</Text>
+                    </Pressable>
+                }
             </View>
             {errors.inventory?.[index]?.name && <Text className="w-1/4 text-center text-red-500">{errors.inventory[index].name.message}</Text>}
         </>

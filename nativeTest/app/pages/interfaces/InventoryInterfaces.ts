@@ -12,6 +12,7 @@ export interface InventoryData {
     amountType: dataForDropDowns | null
     warningAmt: number
     category: dataForDropDowns | null
+    medicationTypeId: string | null;
 }
 export type FormData = {
     inventory: InventoryData[];
@@ -37,8 +38,15 @@ export type InventoryRow = {
     unitTypeId: string;
     warningThreshold: number;
     categoryId: string;
+    medicationTypeId: string;
 };
 export type CategoryRow = {
     inventoryCategoryId: string;
     label: string;
+}
+export type MedRow = {
+    medicationTypeId: string;
+    name: string;
+    categoryId: string;
+    defaultUnit: string;
 }
