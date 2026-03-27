@@ -12,7 +12,6 @@ export default function InventorySection({ control, index, remove, errors, amtTy
         control,
         name: `inventory.${index}.amount`,
     });
-
     const warningAmt = useWatch({
         control,
         name: `inventory.${index}.warningAmt`,
@@ -23,9 +22,8 @@ export default function InventorySection({ control, index, remove, errors, amtTy
     });
     const medTypeId = useWatch({
         control,
-        name: `inventory.${index}.itemId`,
+        name: `inventory.${index}.medicationTypeId`,
     })
-
 
     return (
         <>
@@ -36,11 +34,11 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                     rules={{ required: "Name is required" }}
                     render={({ field: { onChange, value } }) => (
                         <TextInput
-                            className="w-1/6 border border-gray-400 rounded px-3 py-2 m-2"
+                            className={`w-1/6 border border-gray-400 rounded px-3 py-2 m-2 ${medTypeId == null ? "" : "bg-gray-200"}`}
                             value={value}
                             onChangeText={onChange}
                             multiline={true}
-                            editable={!medTypeId}
+                            editable={medTypeId == null}
                         />
                     )}
                 />
@@ -109,7 +107,7 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                         )}
                     />
                 </View>
-                {!medTypeId &&
+                {medTypeId === null &&
                     <Pressable className="bg-red-600 p-2 m-2 rounded-lg" onPress={() => { if (itemId) { deleteArray.push(itemId); } remove(index) }}>
                         <Text className="text-center">Remove</Text>
                     </Pressable>

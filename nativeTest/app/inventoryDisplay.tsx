@@ -22,23 +22,21 @@ export default function InventoryDisplay() {
 
     const deleteArray = useRef<string[]>([]);
     const [filter, setFilter] = useState("");
-    const testData: InventoryData[] = queryInv();
-    if (testData.length === 0) {
-        const testtest = query<MedRow>('SELECT * FROM medication_types');
-        testtest.forEach(e => {
+    const invData: InventoryData[] = queryInv();
+    if (invData.length === 0) {
+        const presetData = query<MedRow>('SELECT * FROM medication_types');
+        presetData.forEach(row => {
             run(
                 `INSERT OR IGNORE INTO inventory_items(itemId, name, medicationTypeId, categoryId, quantity, unitTypeId, warningThreshold) VALUES(?, ?, ?, ?, ?, ?, ?);`,
-                [e.medicationTypeId, e.name, e.medicationTypeId, e.categoryId, 0, e.defaultUnit, 2]
+                [row.medicationTypeId, row.name, row.medicationTypeId, row.categoryId, 0, testTypes.find((element) => row.defaultUnit === element.label)?.value, 2]
             );
         });
-
     }
     //[{ name: "test", amount: 5, amountType: { label: 'ml', value: '0' }, warningAmt: 2, tags: [] }, { name: "test2", amount: 1, amountType: { label: 'pills', value: '1' }, warningAmt: 3, tags: [] }];
-
     const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<FormData>({
         mode: "onChange",
         defaultValues: {
-            inventory: testData,
+            inventory: invData,
         },
     });
 

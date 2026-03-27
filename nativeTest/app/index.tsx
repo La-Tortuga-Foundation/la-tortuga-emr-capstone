@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { router } from "expo-router";
-import { Pressable, Text, TextInput, View, Image, TouchableOpacity} from "react-native";
+import { Pressable, Text, TextInput, View, Image, TouchableOpacity } from "react-native";
 import "../global.css";
 import { useRouter } from 'expo-router';
 import { createPatient } from '../src/services/patients';
@@ -13,12 +13,12 @@ export default function Login() {
   const router = useRouter();
 
   const handleLogin = () => {
-    if (!email || !pwd){
+    if (!email || !pwd) {
       alert("Please enter email and password");
       return;
     }
 
-      router.replace("../pages/home");
+    router.replace("../pages/home");
   }
 
   return (
@@ -49,17 +49,21 @@ export default function Login() {
         />
 
         <Pressable className="bg-blue-600 p-4 rounded-lg"
-        onPress={handleLogin}
+          onPress={handleLogin}
         >
           <Text className="text-white text-center font-bold">Log in</Text>
         </Pressable>
-          <TouchableOpacity onPress={() => router.push('/db-test' as any)}>
+        <TouchableOpacity onPress={() => router.push('/db-test' as any)}>
           <Text>DB Test</Text>
-          </TouchableOpacity>
+        </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => router.push('/inventoryDisplay' as any)}>
+        <TouchableOpacity onPress={() => router.push('/inventoryDisplay' as any)}>
           <Text>inv access</Text>
-          </TouchableOpacity>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push('/logDisplay' as any)}>
+          <Text>Logs Test</Text>
+        </TouchableOpacity>
       </View>
 
     </View>
