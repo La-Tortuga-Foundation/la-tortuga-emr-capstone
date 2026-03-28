@@ -35,7 +35,7 @@ export function isDBInitialized(): boolean {
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
-export function query<T>(sql: string, params: unknown[] = []): T[] {
+export function query<T>(sql: string, params: any[] = []): T[] {
   try {
     const result = getDB().executeSync(sql, params);
     return (result.rows ?? []) as T[];
@@ -45,7 +45,7 @@ export function query<T>(sql: string, params: unknown[] = []): T[] {
   }
 }
 
-export function queryOne<T>(sql: string, params: unknown[] = []): T | null {
+export function queryOne<T>(sql: string, params: any[] = []): T | null {
   try {
     const result = getDB().executeSync(sql, params);
     const rows = result.rows ?? [];
@@ -56,7 +56,7 @@ export function queryOne<T>(sql: string, params: unknown[] = []): T | null {
   }
 }
 
-export function run(sql: string, params: unknown[] = []): void {
+export function run(sql: string, params: any[] = []): void {
   try {
     getDB().executeSync(sql, params);
   } catch (error) {
