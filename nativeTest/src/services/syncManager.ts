@@ -63,8 +63,7 @@ const SYNC_TABLES_ORDERED = [
   // Inventory
   'inventory_items',
   'inventory_transactions',
-  // System
-  'collision_remaps',
+  // collision_remaps removed — no __crsql_version column
 ];
 
 const SYNC_MAX_RECORDS_PER_TABLE = 500;
@@ -352,7 +351,6 @@ function getPrimaryKey(table: string): string | null {
     dental_antibiotics: 'dentalAntibioticId',
     inventory_items: 'itemId',
     inventory_transactions: 'transactionId',
-    collision_remaps: 'originalPatientId',
   };
 
   return pkMap[table] || null;

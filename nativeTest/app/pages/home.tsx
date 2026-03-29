@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { ScrollView, Text, View, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { getWaitingRoomVisits } from "../../src/services/visits";
-import { initDB } from "../../src/services/db";
 import "../../global.css";
 
 export default function Home() {
@@ -11,9 +10,9 @@ export default function Home() {
 
   const loadVisits = () => {
     try {
-      initDB();
       const data = getWaitingRoomVisits();
       console.log('[HOME] Visits from DB:', JSON.stringify(data));
+      console.log('[HOME] Visit count:', data.length);
       setVisits(data);
     } catch (e: any) {
       console.error('[HOME] Failed to load visits:', e.message);

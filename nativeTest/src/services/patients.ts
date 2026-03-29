@@ -15,20 +15,20 @@ export function createPatient(
   const patientId = generateId();
   const arrivalOrder = getNextArrivalOrder();
 
-  run(
-    `INSERT INTO patients (patientId, firstName, lastName, dateOfBirth, communityId, status, arrivalOrder)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [
-      patientId,
-      firstName,
-      lastName,
-      dateOfBirth,
-      communityId || null,
-      'waiting',
-      arrivalOrder,
-    ]
-  );
-
+run(
+  `INSERT INTO patients (patientId, firstName, lastName, dateOfBirth, communityId, status, arrivalOrder, __crsql_version)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  [
+    patientId,
+    firstName,
+    lastName,
+    dateOfBirth,
+    communityId || null,
+    'waiting',
+    arrivalOrder,
+    1,
+  ]
+);
 
 
   console.log(`[PATIENTS] Created patient ${patientId} — ${firstName} ${lastName}`);

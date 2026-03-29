@@ -15,17 +15,18 @@ export function createVisit(
   const status = isUrgent ? 'urgent' : 'waiting';
 
   run(
-    `INSERT INTO visits (visitId, patientId, statusTypeId, reasonForVisit, reasonForVisitTag, checkedInAt)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [
-      visitId,
-      patientId,
-      status,
-      reasonForVisit,
-      urgentTrigger || reasonForVisitTag,
-      new Date().toISOString(),
-    ]
-  );
+  `INSERT INTO visits (visitId, patientId, statusTypeId, reasonForVisit, reasonForVisitTag, checkedInAt, __crsql_version)
+   VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  [
+    visitId,
+    patientId,
+    status,
+    reasonForVisit,
+    urgentTrigger || reasonForVisitTag,
+    new Date().toISOString(),
+    1,
+  ]
+);
 
   console.log(`[VISITS] Created visit ${visitId} — status: ${status}`);
   return visitId;
