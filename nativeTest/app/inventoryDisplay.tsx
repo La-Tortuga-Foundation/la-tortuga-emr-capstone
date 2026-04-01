@@ -1,6 +1,6 @@
 import { Pressable, Text, View, ScrollView, TextInput } from "react-native";
 import InventorySection from './pages/components/inventorySection'
-import { InventoryData, FormData, dataForDropDowns, InventoryRow, CategoryRow, MedRow, logRow } from './pages/interfaces/InventoryInterfaces'
+import { InventoryData, FormData, dataForDropDowns, InventoryRow, CategoryRow, MedRow, logRow, MedCategoryRow } from './pages/interfaces/InventoryInterfaces'
 import { useForm, useFieldArray } from "react-hook-form";
 import { useState, useMemo, useRef } from "react";
 import { query, run } from '../src/services/db';
@@ -14,13 +14,16 @@ const testTypes: dataForDropDowns[] = [{ label: "ml", value: '0' }, { label: "ta
 
 export default function InventoryDisplay() {
     const testCategories: dataForDropDowns[] = query<CategoryRow>('SELECT * FROM inventory_categories')
-        .map((invRow) => { return { label: invRow.label, value: invRow.inventoryCategoryId } });
+        .map((invRow) => { return { label: invRow.label, value: invRow.inventoryCategoryId } })
+        .concat(
+            query<MedCategoryRow>('SELECT * FROM medication_categories')
+                .map((invRow) => { return { label: invRow.label, value: invRow.medicationCategoryId } })
+        );
     function queryInv() {
         return query<InventoryRow>('SELECT * FROM inventory_items')
             .map((invRow) => { return { itemId: invRow.itemId, name: invRow.name, amount: invRow.quantity, amountType: { label: testTypes.find((element) => invRow.unitTypeId === element.value)?.label ?? "", value: invRow.unitTypeId }, warningAmt: invRow.warningThreshold, category: { label: testCategories.find((element) => invRow.categoryId === element.value)?.label ?? "", value: invRow.categoryId }, medicationTypeId: invRow.medicationTypeId } });
     }
 
-    const deleteArray = useRef<string[]>([]);
     const [filter, setFilter] = useState("");
     const invData: InventoryData[] = queryInv();
     if (invData.length === 0) {
@@ -46,37 +49,26 @@ export default function InventoryDisplay() {
     });
 
     const onSubmit = (data: FormData) => {
-        for (const itemId of deleteArray.current) {
-            run("DELETE FROM inventory_items WHERE itemId = ?", [itemId]);
-        }
-        deleteArray.current = [];
-        for (const { name, amount, amountType, warningAmt, category } of data.inventory.filter(e => e.itemId == null)) {
+        const updatedInventory = data.inventory.map(item => ({
+            ...item,
+            itemId: item.itemId ?? generateId(),
+        }));
+
+        for (const { itemId, name, amount, amountType, warningAmt, category } of updatedInventory) {
             run(
-                `INSERT OR IGNORE INTO inventory_items(itemId, name, medicationTypeId, categoryId, quantity, unitTypeId, warningThreshold) VALUES(?, ?, ?, ?, ?, ?, ?);`,
-                [generateId(), name, null, category?.value, amount, amountType?.value, warningAmt]
-            );
-        }
-        for (const { itemId, name, amount, amountType, warningAmt, category } of data.inventory.filter(e => e.itemId != null)) {
-            run(
-                `UPDATE inventory_items
-                SET name = ?,
-                categoryId = ?,
-                quantity = ?,
-                unitTypeId = ?,
-                warningThreshold = ?
-                WHERE itemId = ?;`,
-                [
-                    name,
-                    category?.value,
-                    amount,
-                    amountType?.value,
-                    warningAmt,
-                    itemId
-                ]
+                `INSERT INTO inventory_items(itemId, name, medicationTypeId, categoryId, quantity, unitTypeId, warningThreshold)
+                VALUES(?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(itemId) DO UPDATE SET
+                name = excluded.name,
+                categoryId = excluded.categoryId,
+                quantity = excluded.quantity,
+                unitTypeId = excluded.unitTypeId,
+                warningThreshold = excluded.warningThreshold;`,
+                [itemId, name, null, category?.value, amount, amountType?.value, warningAmt]
             );
         }
         const logData = query<logRow>('SELECT logMessage FROM logs');
-        for (const { name } of data.inventory.filter(e => e.warningAmt >= e.amount)) {
+        for (const { name } of updatedInventory.filter(e => e.warningAmt >= e.amount)) {
             const newLogMessage = name + " is low";
             if (!logData.find(e => { return e.logMessage === newLogMessage })) {
                 console.error(newLogMessage);
@@ -85,10 +77,9 @@ export default function InventoryDisplay() {
                     [newLogMessage]
                 );
             }
-
         }
 
-        reset(data);
+        reset({ inventory: updatedInventory });
     };
 
     const watchedInventory = watch("inventory");
@@ -127,7 +118,7 @@ export default function InventoryDisplay() {
                 <Text className="w-1/5 text-center">Name</Text>
                 <Text className="w-1/12 text-center">Amount</Text>
                 <Text className="w-1/6 text-center">Amt Type</Text>
-                <Text className="w-1/11 text-center">Warning Amt</Text>
+                <Text className="text-center">Warning Amt</Text>
                 <Text className="w-3/12 text-center">Category</Text>
                 <Text className="w-1/12 text-center">Delete</Text>
             </View>
@@ -141,7 +132,6 @@ export default function InventoryDisplay() {
                     errors={errors}
                     amtTypeData={testTypes}
                     tagsTypeData={testCategories}
-                    deleteArray={deleteArray.current}
                 />)
                 }
             </ScrollView>

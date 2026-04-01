@@ -1,13 +1,14 @@
-import { Pressable, Text, TextInput, View, ViewStyle } from "react-native";
+import { Pressable, Text, TextInput, View, ViewStyle, Alert } from "react-native";
 import { Controller, useWatch } from "react-hook-form";
 import { Props } from '../interfaces/InventoryInterfaces'
 import { Dropdown } from 'react-native-element-dropdown';
+import { run } from '../../../src/services/db';
 
 export const dropdownStyle: ViewStyle = {
     flex: 1,
 }
 
-export default function InventorySection({ control, index, remove, errors, amtTypeData, tagsTypeData, deleteArray }: Props) {
+export default function InventorySection({ control, index, remove, errors, amtTypeData, tagsTypeData }: Props) {
     const amount = useWatch({
         control,
         name: `inventory.${index}.amount`,
@@ -24,6 +25,17 @@ export default function InventorySection({ control, index, remove, errors, amtTy
         control,
         name: `inventory.${index}.medicationTypeId`,
     })
+    const showConfirmationDialog = () => {
+        Alert.alert(
+            "Delete Item", // Title
+            `Are you sure you want to delete this item?`, // Message
+            [
+                { text: "Cancel", style: "cancel" }, // Cancel button
+                { text: "OK", onPress: () => { if (itemId) { run("DELETE FROM inventory_items WHERE itemId = ?", [itemId]); } remove(index) } } // Confirm button
+            ],
+            { cancelable: true } // Allow dismissing by tapping outside
+        );
+    };
 
     return (
         <>
@@ -108,7 +120,7 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                     />
                 </View>
                 {medTypeId === null &&
-                    <Pressable className="bg-red-600 p-2 m-2 rounded-lg" onPress={() => { if (itemId) { deleteArray.push(itemId); } remove(index) }}>
+                    <Pressable className="bg-red-600 p-2 m-2 rounded-lg" onPress={showConfirmationDialog}>
                         <Text className="text-center">Remove</Text>
                     </Pressable>
                 }

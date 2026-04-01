@@ -24,7 +24,6 @@ export type Props = {
     errors: FieldError<FormData>;
     amtTypeData: dataForDropDowns[];
     tagsTypeData: dataForDropDowns[];
-    deleteArray: RefObject<string[]>;
 };
 export type CheckboxProps = {
     name: string;
@@ -42,6 +41,10 @@ export type InventoryRow = {
 };
 export type CategoryRow = {
     inventoryCategoryId: string;
+    label: string;
+}
+export type MedCategoryRow = {
+    medicationCategoryId: string;
     label: string;
 }
 export type MedRow = {
