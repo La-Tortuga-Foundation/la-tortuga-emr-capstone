@@ -3,6 +3,7 @@ import { ScrollView, Text, View, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { getWaitingRoomVisits } from "../../src/services/visits";
 import "../../global.css";
+import { getPatientById } from "@/src/services/patients";
 
 export default function Home() {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function Home() {
   useEffect(() => { loadVisits(); }, []);
 
   return (
-    <View className="flex-1 bg-gray-100">
+    <View className="flex-1 bg-gray-100 p-5">
       <TouchableOpacity
         className="bg-green-700 p-3 m-2 rounded-lg"
         onPress={() => router.push('/pages/checkIn' as any)}
@@ -46,7 +47,10 @@ export default function Home() {
             {visits.length === 0 ? (
               <Text className="text-center text-gray-400 mt-4">No patients in queue</Text>
             ) : (
-              visits.map((v: any) => (
+              visits.map((v: any) => (                  //use expo routher to pass params
+                <TouchableOpacity onPress={()=> 
+                router.push({pathname: '/pages/editPatient', params: { patientId: v.patientId }})} key={v.visitId}>
+                  
                 <View
                   key={v.visitId}
                   className={`p-3 mb-2 rounded-lg border ${v.statusTypeId === 'urgent' ? 'bg-red-100 border-red-500' : 'bg-white border-gray-200'}`}
@@ -66,6 +70,7 @@ export default function Home() {
                     <Text className="text-red-600 text-xs mt-1">⚠ {v.reasonForVisitTag}</Text>
                   )}
                 </View>
+                </TouchableOpacity>
               ))
             )}
           </ScrollView>

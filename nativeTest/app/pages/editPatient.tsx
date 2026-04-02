@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, Text, View, TextInput, TouchableOpacity, Alert } from "react-native";
 import { useRouter } from "expo-router";
-import { createPatient, getPatientById } from "../../src/services/patients";
-import { createVisit } from "../../src/services/visits";
-import { initDB } from "../../src/services/db";
+import { createPatient, getPatientById, loadPatientInfo, updatePatient } from "../../src/services/patients";
+import { createVisit, getVisitByPatientId, updateVisit } from "../../src/services/visits";
 import "../../global.css";
+import { useLocalSearchParams } from "expo-router";
+import { queryOne, run } from "@/src/services/db";
+
+
 
 const URGENT_QUESTIONS = [
   { key: 'chest_pain', label: 'Chest pain or pressure?' },
@@ -23,63 +26,73 @@ const REASON_OPTIONS = [
   { key: 'other', label: 'Other' },
 ];
 
-export default function CheckIn() {
+export default function EditPatient() {
+    //getID from params and use to get patient info.
+  const {patientId} = useLocalSearchParams();
+
   const router = useRouter();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [dob, setDob] = useState('');
   const [selectedReason, setSelectedReason] = useState('');
   const [urgentAnswers, setUrgentAnswers] = useState<Record<string, boolean>>({});
+  const [visitId, setVisitId] = useState('');
 
   const toggleUrgent = (key: string) => {
-    setUrgentAnswers(prev => ({ ...prev, [key]: !prev[key] }));
-  };
+  setUrgentAnswers(prev => ({ ...prev, [key]: !prev[key] }));
+};
 
-  const getUrgentTrigger = (): string | undefined => {
-    return Object.keys(urgentAnswers).find(k => urgentAnswers[k]);
-  };
+  useEffect(() => {
+//     run(`DELETE FROM visits`);
+// run(`DELETE FROM patients`);
 
-  const handleRegister = () => {
-    if (!firstName || !lastName || !dob) {
-      Alert.alert('Missing info', 'Please enter first name, last name, and date of birth.');
-      return;
-    }
-    if (!selectedReason) {
-      Alert.alert('Missing info', 'Please select a reason for visit.');
-      return;
-    }
+    if(patientId) //if ID exists in params.
+    {
 
-    try {
-      //no need to call initDB here since it's called in the root layout.
-      //initDB();
-      const urgentTrigger = getUrgentTrigger();
-      const isUrgent = !!urgentTrigger;
+      const patient = loadPatientInfo(patientId as string);
+      const visit = getVisitByPatientId(patientId as string);
+      //console.log(patient);
+     // console.log(visit);
+      console.log("VISITS: " + JSON.stringify(queryOne('select * from visits where visitId = ?', [visitId])));
 
-      const patientId = createPatient(firstName, lastName, dob);
-      console.log('[CHECKIN] Patient ID:', patientId);
-      console.log('[TEST] Patient from DB:', getPatientById(patientId));
+      if (patient) { //if pateint exists in DB with that ID, load their info into state.
+          setFirstName(patient.firstName);
+          setLastName(patient.lastName);
+          setDob(patient.dateOfBirth);
+        }
+      //reason for visit
+          if(visit){
+            setVisitId(visit.visitId);
+            setSelectedReason(visit.reasonForVisit || '');
+              setUrgentAnswers({ [visit.reasonForVisitTag]: true });
+          
+          }
 
       
-
-      createVisit(patientId, selectedReason, selectedReason, isUrgent, urgentTrigger);
-
-      Alert.alert(
-        isUrgent ? '🚨 Patient flagged as URGENT' : '✅ Patient registered',
-        isUrgent ? `Trigger: ${urgentTrigger}` : 'Added to waiting room',
-        [{ text: 'OK', onPress: () => router.replace('../pages/home') }]
-      );
-    } catch (e: any) {
-      Alert.alert('Error', e.message);
     }
-  };
+  }, []);
+
+
+  const handleUpdate = () => {
+   updatePatient(patientId as string, firstName, lastName, dob);
+   //TODO: FIX THIS BUG FOR VISIT TAG
+   const firstActive = Object.keys(urgentAnswers).find(k => urgentAnswers[k]) || ''; //?????
+    updateVisit(visitId as string, selectedReason, firstActive);
+    router.replace('/pages/home');
+    //console.log('[UPDATE] visitId:', visitId, 'firstActive:', firstActive);
+  }
+
+
+
+
 
   return (
     <ScrollView className="flex-1 bg-gray-100 p-5">
       <View className="p-4">
         <Text className="text-2xl font-bold text-center text-green-800 mb-4">
-          New Patient Check-In
+          UPDATE PATIENT INFO
         </Text>
-
+            
         {/* Patient Info */}
         <Text className="text-sm font-bold text-gray-500 uppercase mb-2">Patient Information</Text>
         <TextInput
@@ -136,12 +149,12 @@ export default function CheckIn() {
           </TouchableOpacity>
         ))}
 
-        {/* Register Button */}
+        {/* UPDATE Button */}
         <TouchableOpacity
-          onPress={handleRegister}
+          onPress={handleUpdate}
           className="bg-green-700 p-4 rounded-lg mt-4"
         >
-          <Text className="text-white text-center font-bold text-lg">Register patient</Text>
+          <Text className="text-white text-center font-bold text-lg">Update patient</Text>
         </TouchableOpacity>
 
       </View>

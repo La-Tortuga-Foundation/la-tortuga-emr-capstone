@@ -13,10 +13,10 @@ export default function Login() {
   const router = useRouter();
 
   const handleLogin = () => {
-    if (!email || !pwd) {
-      alert("Please enter email and password");
-      return;
-    }
+    // if (!email || !pwd) {
+    //   alert("Please enter email and password");
+    //   return;
+    // }
 
     router.replace("../pages/home");
   }

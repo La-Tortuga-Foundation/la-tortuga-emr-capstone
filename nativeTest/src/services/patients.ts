@@ -1,10 +1,12 @@
+import { Patient } from '@/app/pages/interfaces/PatientInterface';
 import { run, queryOne, query } from './db';
 
 function generateId(): string {
+  //why p? seems redundant
   return 'p-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 }
 
-export function createPatient(
+export function createPatient( //returns patientId
   firstName: string,
   lastName: string,
   dateOfBirth: string,
@@ -41,3 +43,27 @@ function getNextArrivalOrder(): number {
   );
   return (result?.maxOrder || 0) + 1;
 }
+
+export function getPatientById(patientId: string) {
+   return queryOne<Patient>(
+    `SELECT * FROM patients WHERE patientId = ?`, [patientId]
+   );
+}
+
+  export function loadPatientInfo(patientId: string) {
+    //patient is expected to be a Type of Patient.
+  const patient = queryOne<Patient>(`SELECT * FROM patients WHERE patientId = ?`, [patientId]);
+  return patient;   
+   
+  }
+
+  export function updatePatient(patientId: string, firstName:string, lastName:string, dateOfBirth:string){
+    try{
+    run(`update patients SET firstName = ?, 
+      lastName = ?, dateOfBirth = ? WHERE patientId = ? `, [firstName, lastName, dateOfBirth, patientId]);
+    } catch(e: any){
+      console.error(`[PATIENTS] Failed to update patient ${patientId}:`, e.message);
+    }
+    
+      
+  }

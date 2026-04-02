@@ -36,6 +36,7 @@ export function getWaitingRoomVisits() {
   return query(`
     SELECT 
       v.visitId,
+      v.patientId,
       v.statusTypeId,
       v.reasonForVisit,
       v.reasonForVisitTag,
@@ -50,4 +51,20 @@ export function getWaitingRoomVisits() {
       CASE v.statusTypeId WHEN 'urgent' THEN 0 ELSE 1 END,
       p.arrivalOrder ASC
   `);
+}
+
+export function getVisitByPatientId(patientId: string) {
+  return queryOne<any>(`SELECT * FROM visits WHERE patientId = ? ORDER BY checkedInAt DESC LIMIT 1`,
+    [patientId]);
+
+}
+
+export function updateVisit(visitId:string, reasonForVisit:string, reasonForVisitTag:string){
+  try{
+    run(`UPDATE visits SET reasonForVisit = ?, reasonForVisitTag = ? WHERE visitId = ?`,
+       [reasonForVisit, reasonForVisitTag, visitId]);
+  }catch(e: any){
+    console.error(`[VISITS] Failed to update visit ${visitId}:`, e.message);
+}
+
 }
