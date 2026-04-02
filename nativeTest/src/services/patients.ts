@@ -1,5 +1,6 @@
 import { Patient } from '@/app/pages/interfaces/PatientInterface';
 import { run, queryOne, query } from './db';
+import { isClientConnected, sendHandshakeOnExistingConnection } from './syncSocket';
 
 function generateId(): string {
   //why p? seems redundant
@@ -34,6 +35,12 @@ run(
 
 
   console.log(`[PATIENTS] Created patient ${patientId} — ${firstName} ${lastName}`);
+
+  if (isClientConnected()) {
+    console.log('[PATIENTS] New patient — triggering sync on existing connection');
+    setTimeout(() => sendHandshakeOnExistingConnection(), 100);
+  }
+
   return patientId;
 }
 

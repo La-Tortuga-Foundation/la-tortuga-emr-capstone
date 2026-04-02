@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { ScrollView, Text, View, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
-import { getWaitingRoomVisits } from "../../src/services/visits";
+import { getWaitingRoomVisits } from '../../src/services/visits';
+import { setSyncCompleteCallback } from '../../src/services/syncManager';
 import "../../global.css";
 import { getPatientById } from "@/src/services/patients";
 
@@ -20,7 +21,17 @@ export default function Home() {
     }
   };
 
-  useEffect(() => { loadVisits(); }, []);
+useEffect(() => {
+  loadVisits();
+  setSyncCompleteCallback(() => {
+    console.log('[HOME] Sync complete — reloading visits');
+    loadVisits();
+  });
+  const interval = setInterval(() => {
+    loadVisits();
+  }, 10000);
+  return () => clearInterval(interval);
+}, []);
 
   return (
     <View className="flex-1 bg-gray-100 p-5">

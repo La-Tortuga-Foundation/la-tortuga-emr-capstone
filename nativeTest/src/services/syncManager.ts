@@ -73,7 +73,7 @@ const SYNC_MAX_RECORDS_PER_TABLE = 500;
 let isSyncing = false;
 let lastSyncWatermarks: Map<string, number> = new Map();
 let onSyncStatusChange: ((syncing: boolean, progress: string) => void) | null = null;
-
+let onSyncComplete: (() => void) | null = null;
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 export function setSyncStatusCallback(
@@ -81,7 +81,9 @@ export function setSyncStatusCallback(
 ): void {
   onSyncStatusChange = callback;
 }
-
+export function setSyncCompleteCallback(callback: () => void): void {
+  onSyncComplete = callback;
+}
 export function getSyncStatus(): { isSyncing: boolean } {
   return { isSyncing };
 }
@@ -90,10 +92,14 @@ export function resetSyncState(): void {
   isSyncing = false;
   updateStatus(false, '');
 }
+export function resetWatermarks(): void {
+  lastSyncWatermarks = new Map();
+}
 
 // ─── Handshake ────────────────────────────────────────────────────────────────
 
 export function sendHandshake(sendFn: (msg: string) => void): void {
+  lastSyncWatermarks = new Map();
   const handshake: SyncHandshake = {
     type: 'handshake',
     tabletId: getTabletId(),
@@ -102,7 +108,6 @@ export function sendHandshake(sendFn: (msg: string) => void): void {
   sendFn(JSON.stringify(handshake) + '\n---END---\n');
   console.log('[SYNC] Handshake sent');
 }
-
 // ─── Message Router ───────────────────────────────────────────────────────────
 
 export async function handleSyncMessage(
@@ -150,6 +155,9 @@ async function handleHandshake(
 ): Promise<void> {
   console.log('[SYNC] Received handshake from:', handshake.tabletId);
   updateStatus(true, `Connected to ${handshake.tabletId}`);
+
+  // Reset watermarks so all records are included in every sync
+  lastSyncWatermarks = new Map();
 
   const deltaData = await fetchDeltaChanges();
 
@@ -257,8 +265,8 @@ async function handleSyncData(
   // Bidirectional — send our data back if this wasn't already a reply
   if (!syncData.isReply) {
     console.log('[SYNC] Sending reply to:', syncData.fromTabletId);
-    const replyDelta = await fetchDeltaChanges(syncData.timestamp);
-
+    const replyDelta = await fetchDeltaChanges(0);
+    
     const reply: SyncData = {
       type: 'sync_data',
       fromTabletId: getTabletId(),
@@ -373,5 +381,8 @@ function updateStatus(syncing: boolean, progress: string): void {
   isSyncing = syncing;
   if (onSyncStatusChange) {
     onSyncStatusChange(syncing, progress);
+  }
+  if (!syncing && onSyncComplete) {
+    onSyncComplete();
   }
 }

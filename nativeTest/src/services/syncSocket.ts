@@ -6,7 +6,7 @@
 
 import TcpSocket from 'react-native-tcp-socket';
 import { Buffer } from 'buffer';
-import { handleSyncMessage, sendHandshake } from './syncManager';
+import { handleSyncMessage, sendHandshake, resetWatermarks } from './syncManager';
 
 const DEFAULT_SYNC_PORT = 8889;
 const MESSAGE_DELIMITER = '\n---END---\n';
@@ -236,6 +236,20 @@ export function isServerRunning(): boolean {
 
 export function isClientConnected(): boolean {
   return clientSocket !== null;
+}
+export function sendHandshakeOnExistingConnection(): void {
+  if (!clientSocket) return;
+  try {
+    resetWatermarks();
+    sendHandshake((msg) => {
+      if (clientSocket) {
+        clientSocket.write(msg);
+      }
+    });
+    console.log('[SYNC SOCKET] Triggered handshake on existing connection');
+  } catch (err) {
+    console.error('[SYNC SOCKET] Failed to trigger handshake:', err);
+  }
 }
 
 export function broadcastToAllConnectedPeers(
