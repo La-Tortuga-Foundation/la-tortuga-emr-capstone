@@ -4,6 +4,7 @@ import { InventoryData, FormData, dataForDropDowns, InventoryRow, CategoryRow, M
 import { useForm, useFieldArray } from "react-hook-form";
 import { useState, useMemo, useRef } from "react";
 import { query, run } from '../src/services/db';
+import { Snackbar } from 'react-native-snackbar';
 
 function generateId(): string {
     return 'i-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
@@ -68,15 +69,29 @@ export default function InventoryDisplay() {
             );
         }
         const logData = query<logRow>('SELECT logMessage FROM logs');
+        let finalMessage = "";
+        let numLows = 0;
         for (const { name } of updatedInventory.filter(e => e.warningAmt >= e.amount)) {
             const newLogMessage = name + " is low";
             if (!logData.find(e => { return e.logMessage === newLogMessage })) {
-                console.error(newLogMessage);
+                finalMessage = newLogMessage;
+                numLows++;
                 run(
                     `INSERT OR IGNORE INTO logs(logMessage) VALUES(?);`,
                     [newLogMessage]
                 );
             }
+        }
+        if (numLows) {
+            Snackbar.show({
+                text: `⚠️ ${numLows} : ${finalMessage}`,
+                duration: Snackbar.LENGTH_INDEFINITE,
+                action: {
+                    text: 'X',
+                    textColor: 'green',
+                    onPress: () => { /* Do something. */ },
+                },
+            });
         }
 
         reset({ inventory: updatedInventory });
