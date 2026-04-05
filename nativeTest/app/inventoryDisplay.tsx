@@ -2,7 +2,7 @@ import { Pressable, Text, View, ScrollView, TextInput } from "react-native";
 import InventorySection from './pages/components/inventorySection'
 import { InventoryData, FormData, dataForDropDowns, InventoryRow, CategoryRow, MedRow, logRow, MedCategoryRow } from './pages/interfaces/InventoryInterfaces'
 import { useForm, useFieldArray } from "react-hook-form";
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, } from "react";
 import { query, run } from '../src/services/db';
 import { Snackbar } from 'react-native-snackbar';
 
