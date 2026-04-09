@@ -18,6 +18,7 @@
  */
 
 import { open, type DB } from '@op-engineering/op-sqlite';
+import { MedRow, dataForDropDowns } from '../../app/pages/interfaces/InventoryInterfaces'
 
 // ─── Database Instance ────────────────────────────────────────────────────────
 
@@ -97,6 +98,14 @@ export function initDB(): void {
   createSystemTables();
   createIndexes();
   seedDynamicLookups();
+
+  const testTypes: dataForDropDowns[] = [{ label: "ml", value: '0' }, { label: "tablet", value: '1' }, { label: "mg", value: '2' }, { label: "g", value: '3' }, { label: "other", value: '4' }];
+  query<MedRow>('SELECT * FROM medication_types').forEach(row => {
+    run(
+      `INSERT OR IGNORE INTO inventory_items(itemId, name, medicationTypeId, categoryId, quantity, unitTypeId, warningThreshold) VALUES(?, ?, ?, ?, ?, ?, ?);`,
+      [row.medicationTypeId, row.name, row.medicationTypeId, row.categoryId, 0, testTypes.find((element) => row.defaultUnit === element.label)?.value, 2]
+    );
+  });
 
   try {
     enableCRDT();

@@ -27,16 +27,7 @@ export default function InventoryDisplay() {
 
     const [filter, setFilter] = useState("");
     const invData: InventoryData[] = queryInv();
-    if (invData.length === 0) {
-        const presetData = query<MedRow>('SELECT * FROM medication_types');
-        presetData.forEach(row => {
-            run(
-                `INSERT OR IGNORE INTO inventory_items(itemId, name, medicationTypeId, categoryId, quantity, unitTypeId, warningThreshold) VALUES(?, ?, ?, ?, ?, ?, ?);`,
-                [row.medicationTypeId, row.name, row.medicationTypeId, row.categoryId, 0, testTypes.find((element) => row.defaultUnit === element.label)?.value, 2]
-            );
-        });
-    }
-    //[{ name: "test", amount: 5, amountType: { label: 'ml', value: '0' }, warningAmt: 2, tags: [] }, { name: "test2", amount: 1, amountType: { label: 'pills', value: '1' }, warningAmt: 3, tags: [] }];
+
     const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<FormData>({
         mode: "onChange",
         defaultValues: {
@@ -151,35 +142,28 @@ export default function InventoryDisplay() {
                 }
             </ScrollView>
 
-            <Pressable
-                className="bg-blue-600 p-4 rounded-lg w-full m-2"
-                onPress={() =>
-                    append({
-                        itemId: null,
-                        name: "",
-                        amount: 0,
-                        amountType: null,
-                        warningAmt: 2,
-                        category: null,
-                        medicationTypeId: null
-                    })
-                }
-            >
-                <Text className="text-white text-center">Add New</Text>
-            </Pressable>
             <View className="flex-row w-full">
+                <Pressable
+                    className="bg-blue-600 p-4 rounded-lg w-1/2"
+                    onPress={() =>
+                        append({
+                            itemId: null,
+                            name: "",
+                            amount: 0,
+                            amountType: null,
+                            warningAmt: 2,
+                            category: null,
+                            medicationTypeId: null
+                        })
+                    }
+                >
+                    <Text className="text-white text-center">Add New</Text>
+                </Pressable>
                 <Pressable
                     className="bg-green-600 p-4 rounded-lg w-1/2"
                     onPress={handleSubmit(onSubmit)}
                 >
                     <Text className="text-white text-center">Submit</Text>
-                </Pressable>
-
-                <Pressable
-                    className="bg-red-600 p-4 rounded-lg w-1/2"
-                    onPress={() => { reset() }}
-                >
-                    <Text className="text-white text-center">Cancel</Text>
                 </Pressable>
             </View>
         </View>

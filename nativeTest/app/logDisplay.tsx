@@ -1,5 +1,5 @@
 import { query, run } from '../src/services/db';
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View, Alert } from "react-native";
 import { logRow } from './pages/interfaces/InventoryInterfaces';
 import { useState, useEffect } from "react";
 
@@ -10,6 +10,17 @@ export default function LogDisplay() {
         run("DELETE FROM logs WHERE logMessage = ?", [msg]);
         setLogs(prev => prev.filter(e => e.logMessage !== msg));
     }
+    const showConfirmationDialog = (msg: string) => {
+        Alert.alert(
+            "Delete Item",
+            `Are you sure you want to delete "${msg}"?`,
+            [
+                { text: "Cancel", style: "cancel" },
+                { text: "OK", onPress: () => { deleteItem(msg); } }
+            ],
+            { cancelable: true }
+        );
+    };
 
     useEffect(() => {
         const data = query<logRow>('SELECT logMessage FROM logs');
@@ -36,7 +47,7 @@ export default function LogDisplay() {
 
                             <Pressable
                                 className="bg-red-500 px-3 py-2 ml-3 rounded-lg"
-                                onPress={() => deleteItem(e.logMessage)}
+                                onPress={() => showConfirmationDialog(e.logMessage)}
                             >
                                 <Text className="text-white font-semibold">Remove</Text>
                             </Pressable>

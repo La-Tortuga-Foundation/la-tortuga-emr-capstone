@@ -27,13 +27,13 @@ export default function InventorySection({ control, index, remove, errors, amtTy
     })
     const showConfirmationDialog = () => {
         Alert.alert(
-            "Delete Item", // Title
-            `Are you sure you want to delete this item?`, // Message
+            "Delete Item",
+            `Are you sure you want to delete this item?`,
             [
-                { text: "Cancel", style: "cancel" }, // Cancel button
-                { text: "OK", onPress: () => { if (itemId) { run("DELETE FROM inventory_items WHERE itemId = ?", [itemId]); } remove(index) } } // Confirm button
+                { text: "Cancel", style: "cancel" },
+                { text: "OK", onPress: () => { if (itemId) { run("DELETE FROM inventory_items WHERE itemId = ?", [itemId]); } remove(index) } }
             ],
-            { cancelable: true } // Allow dismissing by tapping outside
+            { cancelable: true }
         );
     };
 
