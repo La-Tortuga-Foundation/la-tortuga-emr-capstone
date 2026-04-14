@@ -64,6 +64,9 @@ export default function Login() {
         <TouchableOpacity onPress={() => router.push('/logDisplay' as any)}>
           <Text>Logs Test</Text>
         </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/medicalFormStart' as any)}>
+          <Text>med forms test</Text>
+        </TouchableOpacity>
       </View>
 
     </View>
