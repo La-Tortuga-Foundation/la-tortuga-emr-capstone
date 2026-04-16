@@ -1,17 +1,15 @@
 import { Pressable, Text, View, ScrollView, TextInput } from "react-native";
 import InventorySection from './pages/components/inventorySection'
-import { InventoryData, FormData, dataForDropDowns, InventoryRow, CategoryRow, MedRow, logRow, MedCategoryRow } from './pages/interfaces/InventoryInterfaces'
+import { InventoryData, FormData, logRow, dataForDropDowns, CategoryRow, MedCategoryRow } from './pages/interfaces/InventoryInterfaces'
 import { useForm, useFieldArray } from "react-hook-form";
 import { useState, useMemo, } from "react";
 import { query, run } from '../src/services/db';
 import { Snackbar } from 'react-native-snackbar';
+import { testTypes, queryInv } from './pages/functions/inventoryFunc';
 
 function generateId(): string {
     return 'i-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 }
-// test data, get real from DB.
-const testTypes: dataForDropDowns[] = [{ label: "ml", value: '0' }, { label: "tablet", value: '1' }, { label: "mg", value: '2' }, { label: "g", value: '3' }, { label: "other", value: '4' }];
-// const testCategories: dataForDropDowns[] = [{ label: "medicine", value: '0' }, { label: "brace", value: '1' }, { label: "bandage", value: '2' }, { label: "other", value: '3' }];
 
 export default function InventoryDisplay() {
     const testCategories: dataForDropDowns[] = query<CategoryRow>('SELECT * FROM inventory_categories')
@@ -20,13 +18,9 @@ export default function InventoryDisplay() {
             query<MedCategoryRow>('SELECT * FROM medication_categories')
                 .map((invRow) => { return { label: invRow.label, value: invRow.medicationCategoryId } })
         );
-    function queryInv() {
-        return query<InventoryRow>('SELECT * FROM inventory_items')
-            .map((invRow) => { return { itemId: invRow.itemId, name: invRow.name, amount: invRow.quantity, amountType: { label: testTypes.find((element) => invRow.unitTypeId === element.value)?.label ?? "", value: invRow.unitTypeId }, warningAmt: invRow.warningThreshold, category: { label: testCategories.find((element) => invRow.categoryId === element.value)?.label ?? "", value: invRow.categoryId }, medicationTypeId: invRow.medicationTypeId } });
-    }
 
     const [filter, setFilter] = useState("");
-    const invData: InventoryData[] = queryInv();
+    const invData: InventoryData[] = queryInv(testCategories);
 
     const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<FormData>({
         mode: "onChange",
