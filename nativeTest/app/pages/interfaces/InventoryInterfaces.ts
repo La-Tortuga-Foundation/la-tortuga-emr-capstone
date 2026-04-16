@@ -25,6 +25,13 @@ export type Props = {
     amtTypeData: dataForDropDowns[];
     tagsTypeData: dataForDropDowns[];
 };
+export type Props2 = {
+    control: Control<FormData>;
+    index: number;
+    remove: UseFieldArrayRemove;
+    errors: FieldError<FormData>;
+    dbData: InventoryData[];
+};
 export type CheckboxProps = {
     name: string;
     control: Control<any>;

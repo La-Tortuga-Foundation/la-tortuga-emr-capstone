@@ -4,15 +4,12 @@ import { FormData, dataForDropDowns } from './pages/interfaces/InventoryInterfac
 import { useForm, useFieldArray } from "react-hook-form";
 import { useState, useMemo } from "react";
 import { Snackbar } from 'react-native-snackbar';
-import { getInventoryCategories, getInventoryItems, submitInventory } from '../src/services/inventoryService';
+import { testTypes, queryInv } from './pages/functions/inventoryFunc';
 
-const testTypes: dataForDropDowns[] = [
-  { label: "ml", value: '0' },
-  { label: "tablet", value: '1' },
-  { label: "mg", value: '2' },
-  { label: "g", value: '3' },
-  { label: "other", value: '4' }
-];
+function generateId(): string {
+    return 'i-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+}
+import { getInventoryCategories, getInventoryItems, submitInventory } from '../src/services/inventoryService';
 
 export default function InventoryDisplay() {
   const testCategories = getInventoryCategories();
