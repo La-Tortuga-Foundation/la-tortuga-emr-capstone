@@ -3,7 +3,7 @@ import { Controller, useWatch } from "react-hook-form";
 import { Props } from '../interfaces/InventoryInterfaces';
 import { Dropdown } from 'react-native-element-dropdown';
 import { run } from '../../../src/services/db';
-import { dropdownStyle, sanitizeNumericInput } from '../functions/inventoryFunc';
+import { dropdownStyle, sanitizeNumericInput } from '../../../src/services/inventoryService';
 
 export default function InventorySection({ control, index, remove, errors, amtTypeData, tagsTypeData }: Props) {
     const amount = useWatch({

@@ -2,9 +2,9 @@ import React, { useState, useMemo } from "react";
 import { Text, View, Pressable, ScrollView, TextInput } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator, BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { testTypes, queryInv, dropdownStyle, sanitizeNumericInput } from './pages/functions/inventoryFunc';
+import { testTypes, getInventoryItems, dropdownStyle, sanitizeNumericInput } from '../src/services/inventoryService';
 import { Dropdown } from 'react-native-element-dropdown';
-import { Props, InventoryRow, dataForDropDowns, CategoryRow, MedCategoryRow, InventoryData, Props2 } from './pages/interfaces/InventoryInterfaces'
+import { Props, InventoryRow, dataForDropDowns, CategoryRow, MedCategoryRow, InventoryData, Props2, medicationFormData } from './pages/interfaces/InventoryInterfaces'
 import { Controller, useWatch, useForm, useFieldArray, Control } from "react-hook-form";
 import { query } from '../src/services/db'
 
@@ -53,7 +53,7 @@ export interface itemTypes {
     vals: number[]
     desc: string;
 }
-function TestItem1({ name, vals, desc }: itemTypes) {
+function VitalBox({ name, vals, desc }: itemTypes) {
     const [testNum, setTestNum] = useState<string>("--");
 
     return (
@@ -88,25 +88,35 @@ function VitalPage() {
             <Text className="text-2xl font-bold mb-4">Vital Signs</Text>
 
             <View className="flex-row flex-wrap">
-                <TestItem1
+                <VitalBox
                     name="Height"
                     vals={[60, 65, 68, 70, 72]}
                     desc="in"
                 />
-                <TestItem1
+                <VitalBox
                     name="Weight"
                     vals={[120, 150, 170, 200, 220]}
                     desc="lbs"
                 />
-                <TestItem1
+                <VitalBox
                     name="Temperature"
                     vals={[97, 98, 98.6, 99, 100]}
-                    desc="in"
+                    desc="°F"
                 />
-                <TestItem1
+                <VitalBox
                     name="Pulse"
                     vals={[60, 70, 80, 90, 100]}
                     desc="BPM"
+                />
+                <VitalBox
+                    name="Oxygen Saturation (SpO2)"
+                    vals={[95, 96, 97, 98, 99]}
+                    desc="%"
+                />
+                <VitalBox
+                    name="Respiratory Rate"
+                    vals={[12, 16, 20, 24]}
+                    desc="/min"
                 />
             </View>
         </View>
@@ -117,21 +127,21 @@ function InvItemRow({ control, index, remove, errors, dbData }: Props2) {
     return <View className="bg-white rounded-2xl p-4 mb-3 shadow-sm border border-gray-200 w-full flex-row">
         <Controller
             control={control}
-            name={`inventory.${index}.name`}
+            name={`inventory.${index}.itemId`}
             render={({ field: { onChange, value } }) => (
                 <Dropdown
                     value={value}
                     onChange={onChange}
                     data={dbData}
                     labelField="name"
-                    valueField="id"
+                    valueField="itemId"
                     style={dropdownStyle}
                 />
             )}
         />
         <Controller
             control={control}
-            name={`inventory.${index}.amt`}
+            name={`inventory.${index}.amount`}
             render={({ field: { onChange, value } }) => (
                 <TextInput
                     className="border border-gray-400 rounded px-3 py-2 m-2"
@@ -157,15 +167,9 @@ function MedicationPage() {
             query<MedCategoryRow>('SELECT * FROM medication_categories')
                 .map((invRow) => { return { label: invRow.label, value: invRow.medicationCategoryId } })
         );
-    const dbData: InventoryData[] = queryInv(testCategories);
-    type FomData3 = {
-        name: string
-        amt: number
-    }
-    type FormData2 = {
-        inventory: FomData3[];
-    };
-    const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<FormData2>({
+    const dbData: InventoryData[] = getInventoryItems(testCategories);
+
+    const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<medicationFormData>({
         mode: "onChange",
         defaultValues: {
             inventory: [],
@@ -186,7 +190,7 @@ function MedicationPage() {
             <ScrollView showsVerticalScrollIndicator={false}>
                 {fields.map((field, index) => (
                     <InvItemRow
-                        key={field.id}
+                        key={field.itemId}
                         control={control}
                         index={index}
                         remove={remove}
@@ -195,7 +199,7 @@ function MedicationPage() {
                     />
                 ))}
                 <Pressable
-                    onPress={() => append({ name: "", amt: 0 })}
+                    onPress={() => append({ itemId: "", amount: 0 })}
                     className="bg-blue-500 py-3 rounded-xl mt-4"
                 >
                     <Text className="text-white text-center font-semibold">

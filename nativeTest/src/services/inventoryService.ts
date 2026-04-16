@@ -1,14 +1,24 @@
 import { query, run } from './db';
 import { isClientConnected, sendHandshakeOnExistingConnection } from './syncSocket';
 import { InventoryData, InventoryRow, CategoryRow, MedCategoryRow, logRow, dataForDropDowns } from '../../app/pages/interfaces/InventoryInterfaces';
+import { ViewStyle } from "react-native";
 
-const testTypes: dataForDropDowns[] = [
+export const testTypes: dataForDropDowns[] = [
   { label: "ml", value: '0' },
   { label: "tablet", value: '1' },
   { label: "mg", value: '2' },
   { label: "g", value: '3' },
   { label: "other", value: '4' }
 ];
+
+export const dropdownStyle: ViewStyle = {
+  flex: 1,
+}
+
+export function sanitizeNumericInput(text: string, onChange: (...event: any[]) => void) {
+  const numeric = text.replace(/[^0-9.]/g, "").replace(/^0+([0-9])/, "$1");
+  onChange(numeric === "" ? 0 : numeric);
+}
 
 function generateId(): string {
   return 'i-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
@@ -42,31 +52,31 @@ export function getInventoryItems(testCategories: dataForDropDowns[]): Inventory
     }));
 }
 
-export function submitInventory(inventory: InventoryData[], oldData: InventoryData[]): { numLows: number; finalMessage: string; updatedInventory: InventoryData[] } {
+export function submitInventory(inventory: InventoryData[], oldData: InventoryData[]): { numLows: number; finalMessage: string; } {
   const originalInventoryMap = new Map(
-            oldData.map(item => [item.itemId, item])
-        );
+    oldData.map(item => [item.itemId, item])
+  );
   const updatedInventory = inventory.filter(item => {
-            if (!item.itemId) return true;
+    if (!item.itemId) return true;
 
-            const originalItem = originalInventoryMap.get(item.itemId);
-            if (!originalItem) { console.log("This is actually used"); return true };
+    const originalItem = originalInventoryMap.get(item.itemId);
+    if (!originalItem) { return true };
 
-            const hasChanged =
-                originalItem.name !== item.name ||
-                originalItem.amount !== item.amount ||
-                originalItem.amountType?.value !== item.amountType?.value ||
-                originalItem.warningAmt !== item.warningAmt ||
-                originalItem.category?.value !== item.category?.value ||
-                originalItem.medicationTypeId !== item.medicationTypeId;
+    const hasChanged =
+      originalItem.name !== item.name ||
+      originalItem.amount !== item.amount ||
+      originalItem.amountType?.value !== item.amountType?.value ||
+      originalItem.warningAmt !== item.warningAmt ||
+      originalItem.category?.value !== item.category?.value ||
+      originalItem.medicationTypeId !== item.medicationTypeId;
 
-            return hasChanged;
-        }).map(item => ({
+    return hasChanged;
+  }).map(item => ({
     ...item,
     itemId: item.itemId ?? generateId(),
   }));
-  
-  
+
+
   for (const { itemId, name, amount, amountType, warningAmt, category } of updatedInventory) {
     const existing = query<any>(`SELECT itemId, __crsql_version FROM inventory_items WHERE itemId = ?`, [itemId]);
     console.log(`[INVENTORY] Item ${name} current version:`, existing[0]?.__crsql_version);
@@ -89,7 +99,7 @@ export function submitInventory(inventory: InventoryData[], oldData: InventoryDa
         ELSE inventory_items.__crsql_version
       END;`,
       [itemId, name, null, category?.value, amount, amountType?.value, warningAmt]
-      );
+    );
     const after = query<any>(`SELECT itemId, __crsql_version FROM inventory_items WHERE itemId = ?`, [itemId]);
     console.log(`[INVENTORY] Item ${name} version after update:`, after[0]?.__crsql_version);
   }
@@ -112,5 +122,5 @@ export function submitInventory(inventory: InventoryData[], oldData: InventoryDa
     }
   }
 
-  return { numLows, finalMessage, updatedInventory };
+  return { numLows, finalMessage };
 }

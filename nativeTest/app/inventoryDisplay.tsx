@@ -1,15 +1,10 @@
 import { Pressable, Text, View, ScrollView, TextInput } from "react-native";
 import InventorySection from './pages/components/inventorySection';
-import { FormData, dataForDropDowns } from './pages/interfaces/InventoryInterfaces';
+import { FormData } from './pages/interfaces/InventoryInterfaces';
 import { useForm, useFieldArray } from "react-hook-form";
 import { useState, useMemo } from "react";
 import { Snackbar } from 'react-native-snackbar';
-import { testTypes, queryInv } from './pages/functions/inventoryFunc';
-
-function generateId(): string {
-    return 'i-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-}
-import { getInventoryCategories, getInventoryItems, submitInventory } from '../src/services/inventoryService';
+import { getInventoryCategories, getInventoryItems, submitInventory, testTypes } from '../src/services/inventoryService';
 
 export default function InventoryDisplay() {
   const testCategories = getInventoryCategories();
@@ -25,7 +20,7 @@ export default function InventoryDisplay() {
   const { fields, append, remove } = useFieldArray({ control, name: "inventory" });
 
   const onSubmit = (data: FormData) => {
-    const { numLows, finalMessage, updatedInventory } = submitInventory(data.inventory, invData);
+    const { numLows, finalMessage } = submitInventory(data.inventory, invData);
 
     if (numLows) {
       Snackbar.show({
@@ -34,12 +29,12 @@ export default function InventoryDisplay() {
         action: {
           text: 'X',
           textColor: 'green',
-          onPress: () => {},
+          onPress: () => { },
         },
       });
     }
 
-    reset({ inventory: updatedInventory });
+    reset({ inventory: getInventoryItems(testCategories) });
   };
 
   const watchedInventory = watch("inventory");
