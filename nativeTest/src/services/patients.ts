@@ -64,13 +64,20 @@ export function getPatientById(patientId: string) {
    
   }
 
-  export function updatePatient(patientId: string, firstName:string, lastName:string, dateOfBirth:string){
-    try{
-    run(`update patients SET firstName = ?, 
-      lastName = ?, dateOfBirth = ? WHERE patientId = ? `, [firstName, lastName, dateOfBirth, patientId]);
-    } catch(e: any){
-      console.error(`[PATIENTS] Failed to update patient ${patientId}:`, e.message);
+export function updatePatient(patientId: string, firstName: string, lastName: string, dateOfBirth: string) {
+  try {
+    run(
+      `UPDATE patients SET firstName = ?, lastName = ?, dateOfBirth = ?,
+       __crsql_version = __crsql_version + 1 WHERE patientId = ?`,
+      [firstName, lastName, dateOfBirth, patientId]
+    );
+    console.log(`[PATIENTS] Updated patient ${patientId}`);
+
+    if (isClientConnected()) {
+      console.log('[PATIENTS] Patient updated — triggering sync on existing connection');
+      setTimeout(() => sendHandshakeOnExistingConnection(), 100);
     }
-    
-      
+  } catch (e: any) {
+    console.error(`[PATIENTS] Failed to update patient ${patientId}:`, e.message);
   }
+}

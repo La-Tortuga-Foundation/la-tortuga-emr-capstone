@@ -153,27 +153,32 @@ async function handleHandshake(
   handshake: SyncHandshake,
   sendFn: (msg: string) => void
 ): Promise<void> {
-  console.log('[SYNC] Received handshake from:', handshake.tabletId);
-  updateStatus(true, `Connected to ${handshake.tabletId}`);
+  isSyncing = true;
+  try {
+    console.log('[SYNC] Received handshake from:', handshake.tabletId);
+    updateStatus(true, `Connected to ${handshake.tabletId}`);
 
-  // Reset watermarks so all records are included in every sync
-  lastSyncWatermarks = new Map();
+    // Reset watermarks so all records are included in every sync
+    lastSyncWatermarks = new Map();
 
-  const deltaData = await fetchDeltaChanges();
+    const deltaData = await fetchDeltaChanges();
 
-  const syncData: SyncData = {
-    type: 'sync_data',
-    fromTabletId: getTabletId(),
-    toTabletId: handshake.tabletId,
-    tables: deltaData,
-    timestamp: Date.now(),
-  };
+    const syncData: SyncData = {
+      type: 'sync_data',
+      fromTabletId: getTabletId(),
+      toTabletId: handshake.tabletId,
+      tables: deltaData,
+      timestamp: Date.now(),
+    };
 
-  sendFn(JSON.stringify(syncData) + '\n---END---\n');
+    sendFn(JSON.stringify(syncData) + '\n---END---\n');
 
-  const totalRecords = Object.values(deltaData).reduce((sum, rows) => sum + rows.length, 0);
-  console.log(`[SYNC] Sent ${totalRecords} records across ${Object.keys(deltaData).length} tables`);
-  updateStatus(true, `Sent ${totalRecords} records`);
+    const totalRecords = Object.values(deltaData).reduce((sum, rows) => sum + rows.length, 0);
+    console.log(`[SYNC] Sent ${totalRecords} records across ${Object.keys(deltaData).length} tables`);
+    updateStatus(true, `Sent ${totalRecords} records`);
+  } finally {
+    isSyncing = false;
+  }
 }
 
 // ─── Delta Fetch ──────────────────────────────────────────────────────────────
@@ -212,6 +217,8 @@ async function handleSyncData(
   sendFn: (msg: string) => void
 ): Promise<void> {
   console.log('[SYNC] Received sync data from:', syncData.fromTabletId);
+  isSyncing = true;
+  try {
 
   const totalRecords = Object.values(syncData.tables).reduce(
     (sum, rows) => sum + rows.length, 0
@@ -284,6 +291,10 @@ async function handleSyncData(
   setTimeout(() => {
     if (!isSyncing) updateStatus(false, '');
   }, 5000);
+} finally {
+    isSyncing = false;
+  }
+
 }
 
 // ─── Upsert ───────────────────────────────────────────────────────────────────
