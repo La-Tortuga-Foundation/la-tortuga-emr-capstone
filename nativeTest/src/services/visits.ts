@@ -60,12 +60,13 @@ export function getVisitByPatientId(patientId: string) {
 
 }
 
-export function updateVisit(visitId: string, reasonForVisit: string, reasonForVisitTag: string) {
+export function updateVisit(visitId: string, reasonForVisit: string, reasonForVisitTag: string, isUrgent: boolean) {
   try {
+    const status = isUrgent ? 'urgent' : 'waiting';
     run(
-      `UPDATE visits SET reasonForVisit = ?, reasonForVisitTag = ?,
+      `UPDATE visits SET reasonForVisit = ?, reasonForVisitTag = ?, statusTypeId = ?,
        __crsql_version = __crsql_version + 1 WHERE visitId = ?`,
-      [reasonForVisit, reasonForVisitTag, visitId]
+      [reasonForVisit, reasonForVisitTag, status, visitId]
     );
     console.log(`[VISITS] Updated visit ${visitId}`);
 

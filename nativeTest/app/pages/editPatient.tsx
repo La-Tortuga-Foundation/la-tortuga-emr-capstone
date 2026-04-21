@@ -64,7 +64,11 @@ export default function EditPatient() {
           if(visit){
             setVisitId(visit.visitId);
             setSelectedReason(visit.reasonForVisit || '');
-              setUrgentAnswers({ [visit.reasonForVisitTag]: true });
+              if (visit.reasonForVisitTag) {
+                setUrgentAnswers({ [visit.reasonForVisitTag]: true });
+                } else {
+                setUrgentAnswers({});
+}
           
           }
 
@@ -73,16 +77,15 @@ export default function EditPatient() {
   }, []);
 
 
-  const handleUpdate = () => {
+const handleUpdate = () => {
    updatePatient(patientId as string, firstName, lastName, dob);
-   //TODO: FIX THIS BUG FOR VISIT TAG
-   const firstActive = Object.keys(urgentAnswers).find(k => urgentAnswers[k]) || ''; //?????
-    updateVisit(visitId as string, selectedReason, firstActive);
-    router.replace('/pages/home');
-    //console.log('[UPDATE] visitId:', visitId, 'firstActive:', firstActive);
-  }
-
-
+   const firstActive = Object.keys(urgentAnswers).find(k => urgentAnswers[k]) || '';
+   const isUrgent = !!firstActive;
+   console.log('[EDIT] urgentAnswers:', JSON.stringify(urgentAnswers));
+   console.log('[EDIT] firstActive:', firstActive, 'isUrgent:', isUrgent);
+   updateVisit(visitId as string, selectedReason, firstActive, isUrgent);
+   router.replace('/pages/home');
+}
 
 
 
