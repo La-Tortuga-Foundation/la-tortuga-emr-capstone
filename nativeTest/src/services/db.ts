@@ -83,7 +83,7 @@ export function initDB(): void {
     return;
   }
 
-  initialized = true;
+  initialized = false;
 
   db = open({ name: 'la_tortuga_v2.db' });
 
@@ -196,6 +196,18 @@ function createCoreTables(): void {
       __crsql_version INTEGER DEFAULT 0
     );
   `);
+  
+  run(`CREATE TABLE IF NOT EXISTS users (
+  userId    integer PRIMARY KEY AUTOINCREMENT,
+  firstName TEXT NOT NULL,
+  lastName  TEXT NOT NULL,
+  username  TEXT NOT NULL UNIQUE,
+  password  TEXT NOT NULL,
+  role      TEXT NOT NULL DEFAULT 'staff',
+  isActive  INTEGER DEFAULT 1,
+  createdAt TEXT NOT NULL
+  );
+`)
 
   run(`
     CREATE TABLE IF NOT EXISTS visits (
@@ -549,6 +561,13 @@ function seedDynamicLookups(): void {
       [id, label, icd10]
     );
   }
+
+  // Seed admin user
+run(`INSERT OR IGNORE INTO users (firstName, lastName, username, password, role, isActive, createdAt)
+     VALUES ('Admin', 'User', 'admin', 'admin', 'admin', 1, '2026-01-01T00:00:00.000Z');`);
+run(`INSERT OR IGNORE INTO users (firstName, lastName, username, password, role, isActive, createdAt)
+     VALUES ('Admin', 'User', 'admin2', 'admin2', 'admin', 1, '2026-01-01T00:00:00.000Z');`);
+
 
   console.log('[DB] Seed data inserted.');
 }

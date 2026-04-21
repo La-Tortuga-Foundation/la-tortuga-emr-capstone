@@ -5,6 +5,7 @@ import { getWaitingRoomVisits } from '../../src/services/visits';
 import { setSyncCompleteCallback } from '../../src/services/syncManager';
 import "../../global.css";
 import { getPatientById } from "@/src/services/patients";
+import { run } from "@/src/services/db";
 
 export default function Home() {
   const router = useRouter();
@@ -48,6 +49,13 @@ useEffect(() => {
       >
         <Text className="text-center text-gray-700">Refresh</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+  onPress={() => { run(`DELETE FROM visits`); run(`DELETE FROM patients`); alert('Cleared!'); }}
+  className="bg-red-600 p-4 rounded-lg mt-4"
+>
+  <Text className="text-white text-center font-bold text-lg">Clear All Data</Text>
+</TouchableOpacity>
 
       <View className="flex-1 bg-gray-100 items-center justify-center">
         <View className="h-5/6 w-full max-w-md px-4 bg-white rounded-lg">

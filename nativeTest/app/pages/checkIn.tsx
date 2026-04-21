@@ -51,7 +51,7 @@ export default function CheckIn() {
 
     try {
       //no need to call initDB here since it's called in the root layout.
-      //initDB();
+      initDB();
       const urgentTrigger = getUrgentTrigger();
       const isUrgent = !!urgentTrigger;
 

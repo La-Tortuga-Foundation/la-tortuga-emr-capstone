@@ -1,24 +1,42 @@
 import { useState } from "react";
-import { router } from "expo-router";
 import { Pressable, Text, TextInput, View, Image, TouchableOpacity } from "react-native";
 import "../global.css";
 import { useRouter } from 'expo-router';
-import { createPatient } from '../src/services/patients';
-import { createVisit } from '../src/services/visits';
-import { initDB } from '../src/services/db';
+import { getUserByUsername } from "@/src/services/users";
+import { query, queryOne, run } from "@/src/services/db";
 export default function Login() {
 
-  const [email, setEmail] = useState('');
+  const [userName, setUserName] = useState('');
   const [pwd, setPwd] = useState('');
   const router = useRouter();
 
   const handleLogin = () => {
-    // if (!email || !pwd) {
-    //   alert("Please enter email and password");
-    //   return;
-    // }
+    if (!userName || !pwd) {
+      alert("Please enter email and password");
+      const users = query(`select * from users`);
+      console.log(users);
+      return;
+    } 
 
-    router.replace("../pages/home");
+    // run(`INSERT OR IGNORE INTO users (firstName, lastName, username, password, role, isActive, createdAt)
+    //  VALUES ('Admin', 'User', 'admin', 'admin', 'admin', 1, '2026-01-01T00:00:00.000Z');`);
+
+    try {
+      if(getUserByUsername(userName, pwd)){
+          router.replace("../pages/home");
+      } else {
+        alert("Invalid username or password");
+        return;
+      } 
+   
+    }catch (error) {
+      console.error("Login error:", error);
+      alert("An error occurred during login. Please try again.");
+      return;
+    }
+
+
+   
   }
 
   return (
@@ -34,10 +52,10 @@ export default function Login() {
         </Text>
         <TextInput
           className="bg-white p-4 rounded-lg border border-gray-300 m-2"
-          id="email"
-          value={email}
-          onChangeText={setEmail}
-          placeholder="Email"
+          id="username"
+          value={userName}
+          onChangeText={setUserName}
+          placeholder="Username"
         />
         <TextInput
           className="bg-white p-4 rounded-lg border border-gray-300 m-2"
