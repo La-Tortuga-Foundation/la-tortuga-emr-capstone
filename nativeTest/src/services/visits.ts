@@ -1,4 +1,5 @@
 import { run, query, queryOne } from './db';
+import { isClientConnected, sendHandshakeOnExistingConnection } from './syncSocket';
 
 function generateId(): string {
   return 'v-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
@@ -59,12 +60,20 @@ export function getVisitByPatientId(patientId: string) {
 
 }
 
-export function updateVisit(visitId:string, reasonForVisit:string, reasonForVisitTag:string){
-  try{
-    run(`UPDATE visits SET reasonForVisit = ?, reasonForVisitTag = ? WHERE visitId = ?`,
-       [reasonForVisit, reasonForVisitTag, visitId]);
-  }catch(e: any){
-    console.error(`[VISITS] Failed to update visit ${visitId}:`, e.message);
-}
+export function updateVisit(visitId: string, reasonForVisit: string, reasonForVisitTag: string) {
+  try {
+    run(
+      `UPDATE visits SET reasonForVisit = ?, reasonForVisitTag = ?,
+       __crsql_version = __crsql_version + 1 WHERE visitId = ?`,
+      [reasonForVisit, reasonForVisitTag, visitId]
+    );
+    console.log(`[VISITS] Updated visit ${visitId}`);
 
+    if (isClientConnected()) {
+      console.log('[VISITS] Visit updated — triggering sync on existing connection');
+      setTimeout(() => sendHandshakeOnExistingConnection(), 100);
+    }
+  } catch (e: any) {
+    console.error(`[VISITS] Failed to update visit ${visitId}:`, e.message);
+  }
 }

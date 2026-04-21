@@ -1,12 +1,9 @@
 import { Pressable, Text, TextInput, View, ViewStyle, Alert } from "react-native";
 import { Controller, useWatch } from "react-hook-form";
-import { Props } from '../interfaces/InventoryInterfaces'
+import { Props } from '../interfaces/InventoryInterfaces';
 import { Dropdown } from 'react-native-element-dropdown';
 import { run } from '../../../src/services/db';
-
-export const dropdownStyle: ViewStyle = {
-    flex: 1,
-}
+import { dropdownStyle, sanitizeNumericInput } from '../../../src/services/inventoryService';
 
 export default function InventorySection({ control, index, remove, errors, amtTypeData, tagsTypeData }: Props) {
     const amount = useWatch({
@@ -62,10 +59,7 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                         <TextInput
                             className="w-1/12 border border-gray-400 rounded px-3 py-2 m-2"
                             value={value?.toString() ?? ""}
-                            onChangeText={(text) => {
-                                const numeric = text.replace(/[^0-9.]/g, "").replace(/^0+([1-9])/, "$1");
-                                onChange(numeric === "" ? 0 : numeric);
-                            }}
+                            onChangeText={(text) => { sanitizeNumericInput(text, onChange) }}
                             keyboardType="numeric"
                         />
                     )}
@@ -95,10 +89,7 @@ export default function InventorySection({ control, index, remove, errors, amtTy
                         <TextInput
                             className="border border-gray-400 rounded px-3 py-2 m-2"
                             value={value?.toString() ?? ""}
-                            onChangeText={(text) => {
-                                const numeric = text.replace(/[^0-9.]/g, "").replace(/^0+([0-9])/, "$1");
-                                onChange(numeric === "" ? 0 : numeric);
-                            }}
+                            onChangeText={(text) => { sanitizeNumericInput(text, onChange) }}
                             keyboardType="numeric"
                         />
                     )}

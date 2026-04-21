@@ -25,6 +25,13 @@ export type Props = {
     amtTypeData: dataForDropDowns[];
     tagsTypeData: dataForDropDowns[];
 };
+export type Props2 = {
+    control: Control<medicationFormData>;
+    index: number;
+    remove: UseFieldArrayRemove;
+    errors: FieldError<medicationFormData>;
+    dbData: InventoryData[];
+};
 export type CheckboxProps = {
     name: string;
     control: Control<any>;
@@ -56,3 +63,10 @@ export type MedRow = {
 export type logRow = {
     logMessage: string;
 }
+export type medicationRow = {
+    itemId: string
+    amount: number
+}
+export type medicationFormData = {
+    inventory: medicationRow[];
+};
