@@ -12,28 +12,26 @@ export default function Login() {
 
   const handleLogin = () => {
     if (!userName || !pwd) {
-      alert("Please enter email and password");
-      const users = query(`select * from users`);
-      console.log(users);
+      alert("Please enter username and password");
       return;
     }
 
-    // run(`INSERT OR IGNORE INTO users (firstName, lastName, username, password, role, isActive, createdAt)
-    //  VALUES ('Admin', 'User', 'admin', 'admin', 'admin', 1, '2026-01-01T00:00:00.000Z');`);
-
-    try {
-      if (getUserByUsername(userName, pwd)) {
         router.replace("../pages/home");
-      } else {
-        alert("Invalid username or password");
-        return;
-      }
 
-    } catch (error) {
-      console.error("Login error:", error);
-      alert("An error occurred during login. Please try again.");
-      return;
-    }
+
+    // try {
+    //   if (getUserByUsername(userName, pwd)) {
+    //     router.replace("../pages/home");
+    //   } else {
+    //     alert("Invalid username or password");
+    //     return;
+    //   }
+
+    // } catch (error) {
+    //   console.error("Login error:", error);
+    //   alert("An error occurred during login. Please try again.");
+    //   return;
+    // }
 
 
 
