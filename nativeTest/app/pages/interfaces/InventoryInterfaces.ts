@@ -29,7 +29,6 @@ export type Props2 = {
     control: Control<medicationFormData>;
     index: number;
     remove: UseFieldArrayRemove;
-    errors: FieldError<medicationFormData>;
     dbData: InventoryData[];
 };
 export type CheckboxProps = {
@@ -67,6 +66,18 @@ export type medicationRow = {
     itemId: string
     amount: number
 }
+export type vitalData = {
+    height: number | null;
+    weight: number | null;
+    temperature: number | null;
+    pulse: number | null;
+    oxygenSaturation: number | null;
+    respiratoryRate: number | null;
+
+}
 export type medicationFormData = {
-    inventory: medicationRow[];
+    meds: medicationRow[];
+    vitals: vitalData;
+    visitId: string;
+    patientId: string;
 };

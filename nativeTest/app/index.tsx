@@ -16,27 +16,27 @@ export default function Login() {
       const users = query(`select * from users`);
       console.log(users);
       return;
-    } 
+    }
 
     // run(`INSERT OR IGNORE INTO users (firstName, lastName, username, password, role, isActive, createdAt)
     //  VALUES ('Admin', 'User', 'admin', 'admin', 'admin', 1, '2026-01-01T00:00:00.000Z');`);
 
     try {
-      if(getUserByUsername(userName, pwd)){
-          router.replace("../pages/home");
+      if (getUserByUsername(userName, pwd)) {
+        router.replace("../pages/home");
       } else {
         alert("Invalid username or password");
         return;
-      } 
-   
-    }catch (error) {
+      }
+
+    } catch (error) {
       console.error("Login error:", error);
       alert("An error occurred during login. Please try again.");
       return;
     }
 
 
-   
+
   }
 
   return (
@@ -82,7 +82,12 @@ export default function Login() {
         <TouchableOpacity onPress={() => router.push('/logDisplay' as any)}>
           <Text>Logs Test</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push('/medicalFormStart' as any)}>
+        <TouchableOpacity onPress={() => {
+          router.setParams({}); router.push({
+            pathname: '/medicalFormStart',
+            params: { visitId: "MOCK_VISIT_ID", patientId: query(`SELECT patientId FROM patients`)?.[0].patientId }
+          })
+        }}>
           <Text>med forms test</Text>
         </TouchableOpacity>
       </View>
