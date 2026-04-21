@@ -11,10 +11,10 @@ export default function Login() {
   const router = useRouter();
 
   const handleLogin = () => {
-    if (!userName || !pwd) {
-      alert("Please enter username and password");
-      return;
-    }
+    // if (!userName || !pwd) {
+    //   alert("Please enter username and password");
+    //   return;
+    // }
 
         router.replace("../pages/home");
 
