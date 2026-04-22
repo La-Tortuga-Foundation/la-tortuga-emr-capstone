@@ -16,7 +16,7 @@ export default function Login() {
     //   return;
     // }
 
-        router.replace("../pages/home");
+    router.replace("../pages/home");
 
 
     // try {
@@ -79,14 +79,6 @@ export default function Login() {
 
         <TouchableOpacity onPress={() => router.push('/logDisplay' as any)}>
           <Text>Logs Test</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => {
-          router.setParams({}); router.push({
-            pathname: '/medicalFormStart',
-            params: { visitId: "MOCK_VISIT_ID", patientId: query(`SELECT patientId FROM patients`)?.[0].patientId }
-          })
-        }}>
-          <Text>med forms test</Text>
         </TouchableOpacity>
       </View>
 

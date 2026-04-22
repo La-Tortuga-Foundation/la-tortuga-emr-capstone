@@ -3,7 +3,6 @@ import InventorySection from './pages/components/inventorySection';
 import { FormData } from './pages/interfaces/InventoryInterfaces';
 import { useForm, useFieldArray } from "react-hook-form";
 import { useState, useMemo } from "react";
-import { Snackbar } from 'react-native-snackbar';
 import { getInventoryCategories, getInventoryItems, submitInventory, testTypes } from '../src/services/inventoryService';
 
 export default function InventoryDisplay() {
@@ -20,19 +19,7 @@ export default function InventoryDisplay() {
   const { fields, append, remove } = useFieldArray({ control, name: "inventory" });
 
   const onSubmit = (data: FormData) => {
-    const { numLows, finalMessage } = submitInventory(data.inventory, invData);
-
-    if (numLows) {
-      Snackbar.show({
-        text: `⚠️ ${numLows} : ${finalMessage}`,
-        duration: Snackbar.LENGTH_INDEFINITE,
-        action: {
-          text: 'X',
-          textColor: 'green',
-          onPress: () => { },
-        },
-      });
-    }
+    submitInventory(data.inventory, invData);
 
     reset({ inventory: getInventoryItems(testCategories) });
   };

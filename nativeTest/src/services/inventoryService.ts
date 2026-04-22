@@ -2,6 +2,7 @@ import { query, run } from './db';
 import { isClientConnected, sendHandshakeOnExistingConnection } from './syncSocket';
 import { InventoryData, InventoryRow, CategoryRow, MedCategoryRow, logRow, dataForDropDowns } from '../../app/pages/interfaces/InventoryInterfaces';
 import { ViewStyle } from "react-native";
+import { Snackbar } from 'react-native-snackbar';
 
 export const testTypes: dataForDropDowns[] = [
   { label: "ml", value: '0' },
@@ -52,7 +53,7 @@ export function getInventoryItems(testCategories: dataForDropDowns[]): Inventory
     }));
 }
 
-export function submitInventory(inventory: InventoryData[], oldData: InventoryData[]): { numLows: number; finalMessage: string; } {
+export function submitInventory(inventory: InventoryData[], oldData: InventoryData[]) {
   const originalInventoryMap = new Map(
     oldData.map(item => [item.itemId, item])
   );
@@ -109,11 +110,15 @@ export function submitInventory(inventory: InventoryData[], oldData: InventoryDa
     setTimeout(() => sendHandshakeOnExistingConnection(), 100);
   }
 
+  sendWarningNewInv(updatedInventory);
+}
+
+export function sendWarningNewInv(inventory: InventoryData[]): void {
   const logData = query<logRow>('SELECT logMessage FROM logs');
   let finalMessage = "";
   let numLows = 0;
 
-  for (const { name, warningAmt, amount } of updatedInventory.filter(e => e.warningAmt >= e.amount)) {
+  for (const { name } of inventory.filter(e => e.warningAmt >= e.amount)) {
     const newLogMessage = name + " is low";
     if (!logData.find(e => e.logMessage === newLogMessage)) {
       finalMessage = newLogMessage;
@@ -121,6 +126,41 @@ export function submitInventory(inventory: InventoryData[], oldData: InventoryDa
       run(`INSERT OR IGNORE INTO logs(logMessage) VALUES(?);`, [newLogMessage]);
     }
   }
+  if (numLows) {
+    Snackbar.show({
+      text: `⚠️ ${numLows} : ${finalMessage}`,
+      duration: Snackbar.LENGTH_INDEFINITE,
+      action: {
+        text: 'X',
+        textColor: 'green',
+        onPress: () => { },
+      },
+    });
+  }
+}
 
-  return { numLows, finalMessage };
+export function sendWarningOnCurrentInv(): void {
+  const logData = query<logRow>('SELECT logMessage FROM logs');
+  let finalMessage = "";
+  let numLows = 0;
+
+  for (const { name } of query<{ name: string, warningThreshold: number, quantity: number }>('SELECT name, warningThreshold, quantity FROM inventory_items').filter(e => e.warningThreshold >= e.quantity)) {
+    const newLogMessage = name + " is low";
+    if (!logData.find(e => e.logMessage === newLogMessage)) {
+      finalMessage = newLogMessage;
+      numLows++;
+      run(`INSERT OR IGNORE INTO logs(logMessage) VALUES(?);`, [newLogMessage]);
+    }
+  }
+  if (numLows) {
+    Snackbar.show({
+      text: `⚠️ ${numLows} : ${finalMessage}`,
+      duration: Snackbar.LENGTH_INDEFINITE,
+      action: {
+        text: 'X',
+        textColor: 'green',
+        onPress: () => { },
+      },
+    });
+  }
 }

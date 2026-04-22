@@ -63,7 +63,7 @@ export type logRow = {
     logMessage: string;
 }
 export type medicationRow = {
-    itemId: string
+    item: InventoryRow
     amount: number
 }
 export type vitalData = {
@@ -80,4 +80,6 @@ export type medicationFormData = {
     vitals: vitalData;
     visitId: string;
     patientId: string;
+    carePlan: string;
+    clinicalNotes: string;
 };

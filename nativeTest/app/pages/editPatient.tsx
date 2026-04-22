@@ -27,8 +27,8 @@ const REASON_OPTIONS = [
 ];
 
 export default function EditPatient() {
-    //getID from params and use to get patient info.
-  const {patientId} = useLocalSearchParams();
+  //getID from params and use to get patient info.
+  const { patientId } = useLocalSearchParams();
 
   const router = useRouter();
   const [firstName, setFirstName] = useState('');
@@ -39,53 +39,53 @@ export default function EditPatient() {
   const [visitId, setVisitId] = useState('');
 
   const toggleUrgent = (key: string) => {
-  setUrgentAnswers(prev => ({ ...prev, [key]: !prev[key] }));
-};
+    setUrgentAnswers(prev => ({ ...prev, [key]: !prev[key] }));
+  };
 
   useEffect(() => {
-//     run(`DELETE FROM visits`);
-// run(`DELETE FROM patients`);
+    //     run(`DELETE FROM visits`);
+    // run(`DELETE FROM patients`);
 
-    if(patientId) //if ID exists in params.
+    if (patientId) //if ID exists in params.
     {
 
       const patient = loadPatientInfo(patientId as string);
       const visit = getVisitByPatientId(patientId as string);
-      //console.log(patient);
-     // console.log(visit);
+      // console.log(patient);
+      // console.log(visit);
       console.log("VISITS: " + JSON.stringify(queryOne('select * from visits where visitId = ?', [visitId])));
 
       if (patient) { //if pateint exists in DB with that ID, load their info into state.
-          setFirstName(patient.firstName);
-          setLastName(patient.lastName);
-          setDob(patient.dateOfBirth);
-        }
+        setFirstName(patient.firstName);
+        setLastName(patient.lastName);
+        setDob(patient.dateOfBirth);
+      }
       //reason for visit
-          if(visit){
-            setVisitId(visit.visitId);
-            setSelectedReason(visit.reasonForVisit || '');
-              if (visit.reasonForVisitTag) {
-                setUrgentAnswers({ [visit.reasonForVisitTag]: true });
-                } else {
-                setUrgentAnswers({});
-}
-          
-          }
+      if (visit) {
+        setVisitId(visit.visitId);
+        setSelectedReason(visit.reasonForVisit || '');
+        if (visit.reasonForVisitTag) {
+          setUrgentAnswers({ [visit.reasonForVisitTag]: true });
+        } else {
+          setUrgentAnswers({});
+        }
 
-      
+      }
+
+
     }
   }, []);
 
 
-const handleUpdate = () => {
-   updatePatient(patientId as string, firstName, lastName, dob);
-   const firstActive = Object.keys(urgentAnswers).find(k => urgentAnswers[k]) || '';
-   const isUrgent = !!firstActive;
-   console.log('[EDIT] urgentAnswers:', JSON.stringify(urgentAnswers));
-   console.log('[EDIT] firstActive:', firstActive, 'isUrgent:', isUrgent);
-   updateVisit(visitId as string, selectedReason, firstActive, isUrgent);
-   router.replace('/pages/home');
-}
+  const handleUpdate = () => {
+    updatePatient(patientId as string, firstName, lastName, dob);
+    const firstActive = Object.keys(urgentAnswers).find(k => urgentAnswers[k]) || '';
+    const isUrgent = !!firstActive;
+    console.log('[EDIT] urgentAnswers:', JSON.stringify(urgentAnswers));
+    console.log('[EDIT] firstActive:', firstActive, 'isUrgent:', isUrgent);
+    updateVisit(visitId as string, selectedReason, firstActive, isUrgent);
+    router.replace('/pages/home');
+  }
 
 
 
@@ -95,7 +95,7 @@ const handleUpdate = () => {
         <Text className="text-2xl font-bold text-center text-green-800 mb-4">
           UPDATE PATIENT INFO
         </Text>
-            
+
         {/* Patient Info */}
         <Text className="text-sm font-bold text-gray-500 uppercase mb-2">Patient Information</Text>
         <TextInput
@@ -160,6 +160,26 @@ const handleUpdate = () => {
           <Text className="text-white text-center font-bold text-lg">Update patient</Text>
         </TouchableOpacity>
 
+      </View>
+      <View className="flex-row justify-between">
+        <TouchableOpacity className="bg-green-700 p-4 rounded-lg m-4 w-3/12"
+          onPress={() => {
+            router.setParams({}); router.push({
+              pathname: '/medicalFormStart',
+              params: { visitId: visitId, patientId: patientId }
+            })
+          }}>
+          <Text className="text-white text-center font-bold text-lg">medical forms</Text>
+        </TouchableOpacity>
+        <TouchableOpacity className="bg-green-700 p-4 rounded-lg m-4 w-3/12"
+          onPress={() => {
+            router.setParams({}); router.push({
+              pathname: '/dentalFormStart',
+              params: { visitId: visitId, patientId: patientId }
+            })
+          }}>
+          <Text className="text-white text-center font-bold text-lg">dental forms</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
