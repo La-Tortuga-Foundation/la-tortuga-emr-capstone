@@ -1,37 +1,21 @@
-import React, { useState, useMemo } from "react";
 import { Text, View, Pressable, ScrollView, TextInput } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator, BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { testTypes, getInventoryItems, dropdownStyle, sanitizeNumericInput, sendWarningOnCurrentInv } from '../src/services/inventoryService';
+import { getInventoryItems, dropdownStyle, sanitizeNumericInput, sendWarningOnCurrentInv } from '../src/services/inventoryService';
 import { Dropdown } from 'react-native-element-dropdown';
-import { Props, InventoryRow, dataForDropDowns, CategoryRow, MedCategoryRow, InventoryData, Props2, medicationFormData } from './pages/interfaces/InventoryInterfaces'
+import { dataForDropDowns, CategoryRow, MedCategoryRow, InventoryData, Props2, medicationFormData } from './pages/interfaces/InventoryInterfaces'
 import { Controller, useWatch, useForm, useFieldArray, Control } from "react-hook-form";
 import { query, queryOne, run } from '../src/services/db'
 import { useLocalSearchParams } from 'expo-router';
+import { RootStackParamList, TabParamList, itemTypes, vitalsData, inventoryTransaction } from './pages/interfaces/medFormInterface';
 
 function generateId(): string {
     return 'm-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 }
 
-// --- Types ---
-type RootStackParamList = {
-    Tabs: undefined;
-};
-
-type TabParamList = {
-    Home: undefined;
-    info: undefined;
-    Vitals: undefined;
-    med: undefined;
-    notes: undefined;
-    submit: undefined;
-};
-
-// --- Navigators ---
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
-// --- Custom Tab Bar ---
 function CustomTabBar({ state, navigation }: BottomTabBarProps) {
     return (
         <View className="flex-row justify-around bg-white p-4 border-t">
@@ -56,14 +40,6 @@ function CustomTabBar({ state, navigation }: BottomTabBarProps) {
     );
 }
 
-export interface itemTypes {
-    name: string
-    vals: number[]
-    desc: string;
-    control: any;
-    fieldName: string;
-}
-
 function InfoPage({ control }: { control: Control<medicationFormData> }) {
     const patientId = useWatch({
         control,
@@ -73,10 +49,10 @@ function InfoPage({ control }: { control: Control<medicationFormData> }) {
         control,
         name: "visitId",
     });
-    const patientName = query<{ firstName: string; lastName: string }>(`SELECT firstName, lastName FROM patients WHERE patientId = ?`, [patientId])[0];
+    const patientName = queryOne<{ firstName: string; lastName: string }>(`SELECT firstName, lastName FROM patients WHERE patientId = ?`, [patientId]);
     return (
-        <View className="flex-1 bg-gray-100 px-4 pt-10">
-            <Text className="text-3xl font-bold mb-6 text-center">
+        <View className="flex-1 bg-gray-100 px-4 p-4">
+            <Text className="text-2xl font-bold mb-4">
                 Info
             </Text>
             <Text className="text-3xl m-2">
@@ -126,7 +102,7 @@ function VitalBox({ name, vals, desc, control, fieldName }: itemTypes) {
         </View>
     );
 }
-// --- Screen ---
+
 function VitalPage({ control }: { control: Control<medicationFormData> }) {
     return (
         <View className="flex-1 bg-white p-4">
@@ -228,8 +204,6 @@ function MedicationPage({ control }: { control: Control<medicationFormData> }) {
         );
     const dbData: InventoryData[] = getInventoryItems(testCategories).filter(e => e.amount > 0);
 
-
-
     const { fields: medsFields, append: appendMeds, remove: removeMeds } = useFieldArray({
         control,
         name: "meds",
@@ -244,7 +218,7 @@ function MedicationPage({ control }: { control: Control<medicationFormData> }) {
             <ScrollView showsVerticalScrollIndicator={false}>
                 {medsFields.map((field, index) => (
                     <InvItemRow
-                        key={field.item.itemId}
+                        key={field.id}
                         control={control}
                         index={index}
                         remove={removeMeds}
@@ -295,7 +269,6 @@ function NotesPage({ control }: { control: Control<medicationFormData> }) {
                 render={({ field: { onChange, value } }) => (
                     <TextInput
                         className={`border border-gray-400 rounded px-3 py-2 m-2 h-80`}
-                        // style={{ minHeight: 100, maxHeight: 300 }}
                         value={value}
                         onChangeText={onChange}
                         multiline={true}
@@ -324,21 +297,14 @@ function SubmitPage({ handleSubmit }: { handleSubmit: any }) {
 }
 
 const onSubmit = (data: medicationFormData) => {
-    console.log("Submitting form data:", data);
-    console.log("Submitting form data2:", data.meds?.[0]?.item.name);
-
-
-    console.log("Visit ID from params:", data.visitId);
     const intakeId = `intake_${generateId()}`;
     try {
-        run("BEGIN TRANSACTION;");
         run(
             `INSERT INTO medical_intakes (intakeId, visitId, painLevel, painDuration, painLocations, painQuality, quadrant, antibioticCheckbox, prescriptionMeds, otcMeds, herbalRemedies, carePlan, clinicalNotes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
             [intakeId, data.visitId, null, null, null, null, null, null, null, null, null, data.carePlan, data.clinicalNotes]
         );
-        // 1. Save Medications
+
         for (const med of data.meds) {
-            console.log(`Processing medication:`, med.item.itemId);
             run(
                 `INSERT INTO inventory_transactions (transactionId, itemId, visitId, transactionType, quantityDelta, recordedAt) VALUES (?, ?, ?, ?, ?, ?);`,
                 [generateId(), med.item.itemId, data.visitId, "dispense", med.amount, new Date().toISOString()]
@@ -354,7 +320,6 @@ const onSubmit = (data: medicationFormData) => {
         }
         sendWarningOnCurrentInv();
 
-        // 2. Save Vitals
         const vitalRecords = [
             { vitalTypeId: "height", value: data.vitals.height?.toString() ?? null },
             { vitalTypeId: "weight", value: data.vitals.weight?.toString() ?? null },
@@ -372,24 +337,13 @@ const onSubmit = (data: medicationFormData) => {
                 );
             }
         }
-        run("COMMIT;");
         alert("Data saved successfully!");
     } catch (error) {
-        run("ROLLBACK;");
         console.error("Submission failed:", error);
         alert("Failed to save data. Check console for details.");
     }
 };
-type vitalsData = {
-    vitalTypeId: string,
-    value: string
-}
-type inventoryTransaction = {
-    itemId: string;
-    transactionType: string;
-    quantityDelta: number;
-}
-// --- Tab Navigator ---
+
 function TabNavigator({ visitId, patientId }: { visitId: string; patientId: string }) {
     const testCategories: dataForDropDowns[] = query<CategoryRow>('SELECT * FROM inventory_categories')
         .map((invRow) => { return { label: invRow.label, value: invRow.inventoryCategoryId } })
@@ -399,12 +353,11 @@ function TabNavigator({ visitId, patientId }: { visitId: string; patientId: stri
         );
 
     const intakeRow = queryOne<{ carePlan: string, clinicalNotes: string, intakeId: string }>('SELECT carePlan, clinicalNotes, intakeId FROM medical_intakes WHERE visitId = ?', [visitId]);
-    const invTransRows = query<inventoryTransaction>('SELECT itemId, transactionType, quantityDelta FROM inventory_transactions');
-    const vitalsRows = query<vitalsData>('SELECT vitalTypeId, value FROM visit_vitals WHERE intakeId = ? ORDER BY recordedAt DESC', [intakeRow?.intakeId]);
-    const dbData: InventoryData[] = getInventoryItems(testCategories).filter(e => e.amount > 0);
-    console.log("Initial form data - Vitals:", vitalsRows);
-    console.log("Initial form data - Inventory Transactions:", invTransRows);
-    const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<medicationFormData>({
+    const invTransRows = query<inventoryTransaction>('SELECT itemId, transactionType, quantityDelta FROM inventory_transactions WHERE visitId = ?', [visitId]);
+    const vitalsRows = intakeRow ? query<vitalsData>('SELECT vitalTypeId, value FROM visit_vitals WHERE intakeId = ?', [intakeRow.intakeId]) : [];
+    const dbData: InventoryData[] = getInventoryItems(testCategories);
+
+    const { control, handleSubmit } = useForm<medicationFormData>({
         mode: "onChange",
         defaultValues: {
             meds: invTransRows.map(trans => ({ item: dbData.find((e) => e.itemId === trans.itemId) || { itemId: "", name: "", quantity: 0, unitTypeId: "", warningThreshold: 0, categoryId: "", medicationTypeId: "" }, amount: trans.quantityDelta })) ?? [],
@@ -450,8 +403,6 @@ function TabNavigator({ visitId, patientId }: { visitId: string; patientId: stri
 // --- Root Navigator ---
 export default function MedicalNavigator() {
     const { visitId, patientId } = useLocalSearchParams();
-    console.log("Received visitId param:", visitId);
-    console.log("Received patientId param:", patientId);
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Tabs">
