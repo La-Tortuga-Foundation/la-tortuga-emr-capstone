@@ -68,8 +68,8 @@ const toggleUrgent = (key: string) => {
       console.log('[TEST] Patient from DB:', getPatientById(patientId));
 
       
+createVisit(patientId, selectedReason, urgentTrigger || '', isUrgent, urgentTrigger);
 
-      createVisit(patientId, selectedReason, selectedReason, isUrgent, urgentTrigger);
 
       Alert.alert(
         isUrgent ? '🚨 Patient flagged as URGENT' : '✅ Patient registered',
