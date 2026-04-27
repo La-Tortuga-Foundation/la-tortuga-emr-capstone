@@ -196,7 +196,7 @@ function createCoreTables(): void {
       __crsql_version INTEGER DEFAULT 0
     );
   `);
-  
+
   run(`CREATE TABLE IF NOT EXISTS users (
   userId    integer PRIMARY KEY AUTOINCREMENT,
   firstName TEXT NOT NULL,
@@ -283,8 +283,12 @@ function createMedicalTables(): void {
     CREATE TABLE IF NOT EXISTS visit_vitals (
       vitalId         TEXT PRIMARY KEY NOT NULL,
       intakeId        TEXT NOT NULL REFERENCES medical_intakes(intakeId),
-      vitalTypeId     TEXT NOT NULL,
-      value           TEXT NOT NULL,
+      height          REAL,
+      weight          REAL,
+      temperature     REAL,
+      pulse           REAL,
+      oxygenSaturation   REAL,
+      respiratoryRate REAL,
       recordedAt      TEXT NOT NULL,
       __crsql_siteid  TEXT,
       __crsql_version INTEGER DEFAULT 0
@@ -563,9 +567,9 @@ function seedDynamicLookups(): void {
   }
 
   // Seed admin user
-run(`INSERT OR IGNORE INTO users (firstName, lastName, username, password, role, isActive, createdAt)
+  run(`INSERT OR IGNORE INTO users (firstName, lastName, username, password, role, isActive, createdAt)
      VALUES ('Admin', 'User', 'admin', 'admin', 'admin', 1, '2026-01-01T00:00:00.000Z');`);
-run(`INSERT OR IGNORE INTO users (firstName, lastName, username, password, role, isActive, createdAt)
+  run(`INSERT OR IGNORE INTO users (firstName, lastName, username, password, role, isActive, createdAt)
      VALUES ('Admin', 'User', 'admin2', 'admin2', 'admin', 1, '2026-01-01T00:00:00.000Z');`);
 
 

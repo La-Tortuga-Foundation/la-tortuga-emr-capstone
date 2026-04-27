@@ -17,10 +17,6 @@ export interface itemTypes {
     control: any;
     fieldName: string;
 }
-export type vitalsData = {
-    vitalTypeId: string,
-    value: string
-}
 export type inventoryTransaction = {
     itemId: string;
     transactionType: string;

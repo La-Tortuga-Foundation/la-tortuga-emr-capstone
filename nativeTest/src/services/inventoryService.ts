@@ -34,7 +34,8 @@ export function getInventoryCategories(): dataForDropDowns[] {
     );
 }
 
-export function getInventoryItems(testCategories: dataForDropDowns[]): InventoryData[] {
+export function getInventoryItems(): InventoryData[] {
+  const testCategories: dataForDropDowns[] = getInventoryCategories();
   return query<InventoryRow>('SELECT * FROM inventory_items')
     .map(invRow => ({
       itemId: invRow.itemId,

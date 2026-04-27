@@ -1,13 +1,13 @@
 import { Text, View, Pressable, ScrollView, TextInput } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator, BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { getInventoryItems, dropdownStyle, sanitizeNumericInput, sendWarningOnCurrentInv } from '../src/services/inventoryService';
+import { getInventoryItems, dropdownStyle, sanitizeNumericInput, sendWarningOnCurrentInv, sendWarningNewInv } from '../src/services/inventoryService';
 import { Dropdown } from 'react-native-element-dropdown';
-import { dataForDropDowns, CategoryRow, MedCategoryRow, InventoryData, Props2, medicationFormData } from './pages/interfaces/InventoryInterfaces'
+import { dataForDropDowns, CategoryRow, MedCategoryRow, InventoryData, Props2, medicationFormData, vitalData } from './pages/interfaces/InventoryInterfaces'
 import { Controller, useWatch, useForm, useFieldArray, Control } from "react-hook-form";
 import { query, queryOne, run } from '../src/services/db'
 import { useLocalSearchParams } from 'expo-router';
-import { RootStackParamList, TabParamList, itemTypes, vitalsData, inventoryTransaction } from './pages/interfaces/medFormInterface';
+import { RootStackParamList, TabParamList, itemTypes, inventoryTransaction } from './pages/interfaces/medFormInterface';
 
 function generateId(): string {
     return 'm-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
@@ -29,7 +29,7 @@ function CustomTabBar({ state, navigation }: BottomTabBarProps) {
                 };
 
                 return (
-                    <Pressable className="bg-gray-200 p-1" key={route.key} onPress={onPress}>
+                    <Pressable className="bg-gray-200 px-6 py-2" key={route.key} onPress={onPress}>
                         <Text className={isFocused ? "font-bold" : "font-normal"} >
                             {route.name}
                         </Text>
@@ -195,14 +195,7 @@ function InvItemRow({ control, index, remove, dbData }: Props2) {
     </View>
 }
 
-function MedicationPage({ control }: { control: Control<medicationFormData> }) {
-    const testCategories: dataForDropDowns[] = query<CategoryRow>('SELECT * FROM inventory_categories')
-        .map((invRow) => { return { label: invRow.label, value: invRow.inventoryCategoryId } })
-        .concat(
-            query<MedCategoryRow>('SELECT * FROM medication_categories')
-                .map((invRow) => { return { label: invRow.label, value: invRow.medicationCategoryId } })
-        );
-    const dbData: InventoryData[] = getInventoryItems(testCategories).filter(e => e.amount > 0);
+function MedicationPage({ control, dbData }: { control: Control<medicationFormData>, dbData: InventoryData[] }) {
 
     const { fields: medsFields, append: appendMeds, remove: removeMeds } = useFieldArray({
         control,
@@ -214,26 +207,30 @@ function MedicationPage({ control }: { control: Control<medicationFormData> }) {
             <Text className="text-3xl font-bold mb-6 text-center">
                 Medications
             </Text>
-
-            <ScrollView showsVerticalScrollIndicator={false}>
-                {medsFields.map((field, index) => (
-                    <InvItemRow
-                        key={field.id}
-                        control={control}
-                        index={index}
-                        remove={removeMeds}
-                        dbData={dbData}
-                    />
-                ))}
-                <Pressable
-                    onPress={() => appendMeds({ item: { itemId: "", name: "", quantity: 0, unitTypeId: "", warningThreshold: 0, categoryId: "", medicationTypeId: "" }, amount: 0 })}
-                    className="bg-blue-500 py-3 rounded-xl mt-4"
-                >
-                    <Text className="text-white text-center font-semibold">
-                        + Add Item
-                    </Text>
-                </Pressable>
-            </ScrollView>
+            {dbData.length > 0 ?
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    {medsFields.map((field, index) => (
+                        <InvItemRow
+                            key={field.id}
+                            control={control}
+                            index={index}
+                            remove={removeMeds}
+                            dbData={dbData}
+                        />
+                    ))}
+                    <Pressable
+                        onPress={() => appendMeds({ item: { itemId: "", name: "", quantity: 0, unitTypeId: "", warningThreshold: 0, categoryId: "", medicationTypeId: "" }, amount: 0 })}
+                        className="bg-blue-500 py-3 rounded-xl mt-4"
+                    >
+                        <Text className="text-white text-center font-semibold">
+                            + Add Item
+                        </Text>
+                    </Pressable>
+                </ScrollView>
+                : <Text className="text-gray-500 text-center py-4">
+                    No medications in Inventory.
+                </Text>
+            }
 
         </View>
     );
@@ -299,6 +296,17 @@ function SubmitPage({ handleSubmit }: { handleSubmit: any }) {
 const onSubmit = (data: medicationFormData) => {
     const intakeId = `intake_${generateId()}`;
     try {
+        const dbData = getInventoryItems();
+        const list = [];
+        for (const med of data.meds) {
+            if (med.amount > dbData.find(e => e.itemId === med.item.itemId).amount) {
+                list.push(med.item.name);
+            }
+        }
+        if (list.length > 0) {
+            alert("Attempting to dispense more medication than is currently in inventory for " + list.join(", "));
+            return;
+        }
         run(
             `INSERT INTO medical_intakes (intakeId, visitId, painLevel, painDuration, painLocations, painQuality, quadrant, antibioticCheckbox, prescriptionMeds, otcMeds, herbalRemedies, carePlan, clinicalNotes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
             [intakeId, data.visitId, null, null, null, null, null, null, null, null, null, data.carePlan, data.clinicalNotes]
@@ -313,29 +321,14 @@ const onSubmit = (data: medicationFormData) => {
                 `UPDATE inventory_items SET quantity = quantity - ? WHERE itemId = ?`,
                 [med.amount, med.item.itemId]
             );
-            // run(
-            //     `INSERT INTO visit_medications (visitMedicationId, intakeId, medicationTypeId, dosage, frequency, durationDays, quantity, unitTypeId) VALUES(?, ?, ?, ?, ?, ?, ?, ?);`,
-            //     [generateId(), intakeId, med.item.medicationTypeId, med.dosage, med.frequency, med.durationDays, med.quantity, med.item.unitTypeId]
-            // );
         }
-        sendWarningOnCurrentInv();
+        sendWarningNewInv(dbData.filter(e => data.meds.some(m => m.item.itemId === e.itemId)).map(e => ({ ...e, amount: e.amount - (data.meds.find(m => m.item.itemId === e.itemId)?.amount ?? 0) })));
 
-        const vitalRecords = [
-            { vitalTypeId: "height", value: data.vitals.height?.toString() ?? null },
-            { vitalTypeId: "weight", value: data.vitals.weight?.toString() ?? null },
-            { vitalTypeId: "temperature", value: data.vitals.temperature?.toString() ?? null },
-            { vitalTypeId: "pulse", value: data.vitals.pulse?.toString() ?? null },
-            { vitalTypeId: "oxygenSaturation", value: data.vitals.oxygenSaturation?.toString() ?? null },
-            { vitalTypeId: "respiratoryRate", value: data.vitals.respiratoryRate?.toString() ?? null }
-        ];
-
-        for (const record of vitalRecords) {
-            if (record.value) {
-                run(
-                    `INSERT INTO visit_vitals (vitalId, intakeId, vitalTypeId, value, recordedAt) VALUES (?, ?, ?, ?, ?);`,
-                    [generateId(), intakeId, record.vitalTypeId, record.value, new Date().toISOString()]
-                );
-            }
+        if (data.vitals.height || data.vitals.weight || data.vitals.temperature || data.vitals.pulse || data.vitals.oxygenSaturation || data.vitals.respiratoryRate) {
+            run(
+                `INSERT INTO visit_vitals (vitalId, intakeId, height, weight, temperature, pulse, oxygenSaturation, respiratoryRate, recordedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+                [generateId(), intakeId, data.vitals.height, data.vitals.weight, data.vitals.temperature, data.vitals.pulse, data.vitals.oxygenSaturation, data.vitals.respiratoryRate, new Date().toISOString()]
+            );
         }
         alert("Data saved successfully!");
     } catch (error) {
@@ -345,29 +338,23 @@ const onSubmit = (data: medicationFormData) => {
 };
 
 function TabNavigator({ visitId, patientId }: { visitId: string; patientId: string }) {
-    const testCategories: dataForDropDowns[] = query<CategoryRow>('SELECT * FROM inventory_categories')
-        .map((invRow) => { return { label: invRow.label, value: invRow.inventoryCategoryId } })
-        .concat(
-            query<MedCategoryRow>('SELECT * FROM medication_categories')
-                .map((invRow) => { return { label: invRow.label, value: invRow.medicationCategoryId } })
-        );
-
     const intakeRow = queryOne<{ carePlan: string, clinicalNotes: string, intakeId: string }>('SELECT carePlan, clinicalNotes, intakeId FROM medical_intakes WHERE visitId = ?', [visitId]);
     const invTransRows = query<inventoryTransaction>('SELECT itemId, transactionType, quantityDelta FROM inventory_transactions WHERE visitId = ?', [visitId]);
-    const vitalsRows = intakeRow ? query<vitalsData>('SELECT vitalTypeId, value FROM visit_vitals WHERE intakeId = ?', [intakeRow.intakeId]) : [];
-    const dbData: InventoryData[] = getInventoryItems(testCategories);
-
+    const emptyRow = { height: null, weight: null, temperature: null, pulse: null, oxygenSaturation: null, respiratoryRate: null } as vitalData;
+    const vitalsRows = intakeRow ? queryOne<vitalData>('SELECT height, weight, temperature, pulse, oxygenSaturation, respiratoryRate FROM visit_vitals WHERE intakeId = ?', [intakeRow.intakeId]) ?? emptyRow : emptyRow;
+    const dbData: InventoryData[] = getInventoryItems();
+    console.log("Vitals, ", vitalsRows);
     const { control, handleSubmit } = useForm<medicationFormData>({
         mode: "onChange",
         defaultValues: {
             meds: invTransRows.map(trans => ({ item: dbData.find((e) => e.itemId === trans.itemId) || { itemId: "", name: "", quantity: 0, unitTypeId: "", warningThreshold: 0, categoryId: "", medicationTypeId: "" }, amount: trans.quantityDelta })) ?? [],
             vitals: {
-                height: (vitalsRows.find((v) => v.vitalTypeId === "height")?.value) ? Number(vitalsRows.find((v) => v.vitalTypeId === "height")?.value) : null,
-                weight: (vitalsRows.find((v) => v.vitalTypeId === "weight")?.value) ? Number(vitalsRows.find((v) => v.vitalTypeId === "weight")?.value) : null,
-                temperature: (vitalsRows.find((v) => v.vitalTypeId === "temperature")?.value) ? Number(vitalsRows.find((v) => v.vitalTypeId === "temperature")?.value) : null,
-                pulse: (vitalsRows.find((v) => v.vitalTypeId === "pulse")?.value) ? Number(vitalsRows.find((v) => v.vitalTypeId === "pulse")?.value) : null,
-                oxygenSaturation: (vitalsRows.find((v) => v.vitalTypeId === "oxygenSaturation")?.value) ? Number(vitalsRows.find((v) => v.vitalTypeId === "oxygenSaturation")?.value) : null,
-                respiratoryRate: (vitalsRows.find((v) => v.vitalTypeId === "respiratoryRate")?.value) ? Number(vitalsRows.find((v) => v.vitalTypeId === "respiratoryRate")?.value) : null
+                height: vitalsRows.height,
+                weight: vitalsRows.weight,
+                temperature: vitalsRows.temperature,
+                pulse: vitalsRows.pulse,
+                oxygenSaturation: vitalsRows.oxygenSaturation,
+                respiratoryRate: vitalsRows.respiratoryRate
             },
             visitId: visitId,
             patientId: patientId,
@@ -388,7 +375,7 @@ function TabNavigator({ visitId, patientId }: { visitId: string; patientId: stri
                 {() => <VitalPage control={control} />}
             </Tab.Screen>
             <Tab.Screen name="med">
-                {() => <MedicationPage control={control} />}
+                {() => <MedicationPage control={control} dbData={dbData.filter(e => (e.amount > 0 || invTransRows.some(t => t.itemId === e.itemId)))} />}
             </Tab.Screen>
             <Tab.Screen name="notes">
                 {() => <NotesPage control={control} />}

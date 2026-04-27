@@ -7,7 +7,7 @@ import { getInventoryCategories, getInventoryItems, submitInventory, testTypes }
 
 export default function InventoryDisplay() {
   const testCategories = getInventoryCategories();
-  const invData = getInventoryItems(testCategories);
+  const invData = getInventoryItems();
 
   const [filter, setFilter] = useState("");
 
@@ -21,7 +21,7 @@ export default function InventoryDisplay() {
   const onSubmit = (data: FormData) => {
     submitInventory(data.inventory, invData);
 
-    reset({ inventory: getInventoryItems(testCategories) });
+    reset({ inventory: getInventoryItems() });
   };
 
   const watchedInventory = watch("inventory");
