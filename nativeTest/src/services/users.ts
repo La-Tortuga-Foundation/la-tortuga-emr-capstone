@@ -12,16 +12,13 @@ export function createUser(
          VALUES (?, ?, ?, ?, ?, ?, ?)`, [firstName, lastName, username, password, role, 1, new Date().toISOString()])
 }
 
-// export function getUserByUsername(username: string, password: string) {
-//   return queryOne(`SELECT * FROM users WHERE username = ? AND password = ?`, [username, password]);
-// }
 export function getUserByUsername(username: string, password: string): any {
   const user:any = queryOne(`SELECT * FROM users WHERE username = ? AND password = ?`, [username, password]);
 
   if(user){
     return true;
   }
-  
+
   return false;
 }
 

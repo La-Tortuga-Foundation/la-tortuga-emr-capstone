@@ -64,6 +64,12 @@ export function getPatientById(patientId: string) {
    
   }
 
+export function updatePatientPriority(patientId: string, priority: 'critical' | 'high' | 'normal'): void {
+  run(`UPDATE patients SET priority = ? WHERE patientId = ?`, [priority, patientId]);
+}
+
+
+
 export function updatePatient(patientId: string, firstName: string, lastName: string, dateOfBirth: string) {
   try {
     run(

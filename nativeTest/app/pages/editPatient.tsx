@@ -38,13 +38,20 @@ export default function EditPatient() {
   const [urgentAnswers, setUrgentAnswers] = useState<Record<string, boolean>>({});
   const [visitId, setVisitId] = useState('');
 
+  // const toggleUrgent = (key: string) => {
+  //   setUrgentAnswers(prev => ({ ...prev, [key]: !prev[key] }));
+  // };
+  //TODO: make toggleUrgent singular for now, it is not saving multiple urgents
   const toggleUrgent = (key: string) => {
-    setUrgentAnswers(prev => ({ ...prev, [key]: !prev[key] }));
-  };
+  setUrgentAnswers(prev => {
+    if (prev[key]) return {};
+    return { [key]: true };
+  });
+};
+
+
 
   useEffect(() => {
-    //     run(`DELETE FROM visits`);
-    // run(`DELETE FROM patients`);
 
     if (patientId) //if ID exists in params.
     {

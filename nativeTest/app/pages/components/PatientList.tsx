@@ -1,4 +1,4 @@
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Patient } from "../interfaces/PatientInterface"
 
 
@@ -9,35 +9,31 @@ type PatientListProps = {
 export default function PatientList({ patients }: PatientListProps) {
 
   const getPriorityColor = (priority: Patient["priority"]) => {
-    if (priority === "high") return "bg-red-200";
-    if (priority === "medium") return "bg-yellow-200";
-    if (priority === "low") return "bg-gray-100";
+    if (priority === 1) return "bg-red-300"; //critical
+    if (priority === 2) return "bg-red-200"; //high
+     return "bg-gray-100"; //normal
 
   };
-
-  //sorting needs a map
-  const priorityOrder = {
-    high:1,
-    medium:2,
-    low: 3
-  }
 
   return (
     <View>
       {patients.filter((patient) => patient.status !== "completed")
-      .sort((a,b) => priorityOrder[a.priority] - priorityOrder[b.priority])//sort by priority
+      .sort((a,b) => a.priority - b.priority)//sort by priority
       .map((patient) => (
         <View
-          key={patient.id}
+          key={patient.patientId}
           className={`w-full p-2 mb-3 rounded-lg ${getPriorityColor(patient.priority)}`}
         >
-          <Text className="text-lg font-semibold">{patient.name}</Text>
+          <Text className="text-lg font-semibold">{patient.firstName} {patient.lastName}</Text>
           <Text className="text-sm text-gray-700">
             Priority: {patient.priority}
           </Text>
           <Text className="text-sm text-gray-700">
-            Check-in #: {patient.checkInTime}
+            Check-in #: {patient.arrivalOrder}
           </Text>
+          <TouchableOpacity onPress={() => alert('options for ' + patient.patientId)}>
+      <Text className="text-xl text-gray-500 px-2">⋮ HERE</Text>
+    </TouchableOpacity>
         </View>
       ))}
     </View>

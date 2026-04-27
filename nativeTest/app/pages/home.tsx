@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
-import { ScrollView, Text, View, TouchableOpacity } from "react-native";
+import { ScrollView, Text, View, TouchableOpacity, Alert } from "react-native";
 import { useRouter } from "expo-router";
-import { getWaitingRoomVisits } from '../../src/services/visits';
+import { getWaitingRoomVisits, updateVisit, updateVisitStatus } from '../../src/services/visits';
 import { setSyncCompleteCallback } from '../../src/services/syncManager';
 import "../../global.css";
-import { getPatientById } from "@/src/services/patients";
+import { getPatientById, updatePatientPriority } from "@/src/services/patients";
 import { run } from "@/src/services/db";
 
 export default function Home() {
   const router = useRouter();
   const [visits, setVisits] = useState<any[]>([]);
+
 
   const loadVisits = () => {
     try {
@@ -72,22 +73,56 @@ useEffect(() => {
                   
                 <View
                   key={v.visitId}
-                  className={`p-3 mb-2 rounded-lg border ${v.statusTypeId === 'urgent' ? 'bg-red-100 border-red-500' : 'bg-white border-gray-200'}`}
+                 className={`p-3 mb-2 rounded-lg border ${
+                    v.statusTypeId === 'critical' ? 'bg-red-200 border-red-500' :
+                    v.statusTypeId === 'urgent' ? 'bg-orange-100 border-orange-400' :
+                    'bg-gray-200 border-gray-400'
+                  }`}
+
                 >
                   <View className="flex-row justify-between items-center">
                     <Text className={`font-bold text-base ${v.statusTypeId === 'urgent' ? 'text-red-800' : 'text-gray-800'}`}>
                       {v.firstName} {v.lastName}
                     </Text>
-                    {v.statusTypeId === 'urgent' && (
-                      <Text className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
-                        URGENT
-                      </Text>
+                    {v.statusTypeId === 'critical' && (
+                      <Text className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">CRITICAL</Text>
                     )}
+                    {v.statusTypeId === 'urgent' && (
+                      <Text className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full font-bold">URGENT</Text>
+                    )}
+                       {v.statusTypeId === 'waiting' && (
+                      <Text className="bg-gray-500 text-white text-xs px-2 py-1 rounded-full font-bold">NORMAL</Text>
+                    )}
+
                   </View>
                   <Text className="text-gray-500 text-sm mt-1">{v.reasonForVisit}</Text>
-                  {v.reasonForVisitTag && v.statusTypeId === 'urgent' && (
-                    <Text className="text-red-600 text-xs mt-1">⚠ {v.reasonForVisitTag}</Text>
-                  )}
+                 
+                  
+                  <View className="flex-row justify-between items-center">
+                        {v.statusTypeId === 'critical' || v.statusTypeId === 'urgent' ? (
+                          <Text className="text-red-600 text-semibold mt-1">⚠ {v.reasonForVisitTag}</Text>
+                        ) : (
+                          <Text className="text-gray-400 text-xs mt-1"></Text>
+                        )}
+
+
+                      <TouchableOpacity 
+                     onPress={() => {
+                            Alert.alert('Update Priority: ' + v.firstName + ' ' + v.lastName, 'Select an option', [
+                              { text: 'Critical', onPress: () => { updateVisitStatus(v.visitId, 'critical'); loadVisits(); }},
+                              { text: 'Urgent', onPress: () => { updateVisitStatus(v.visitId, 'urgent'); loadVisits(); }},
+                             { text: 'Normal', onPress: () => { 
+                              updateVisitStatus(v.visitId, 'waiting'); 
+                              updateVisit(v.visitId, v.reasonForVisit, '', false);
+                              loadVisits(); 
+}},
+
+                            ]);
+
+                            }}   >
+                        <Text className="text-xl text-gray-500 px-2">⋮</Text>
+                      </TouchableOpacity>
+                    </View>
                 </View>
                 </TouchableOpacity>
               ))

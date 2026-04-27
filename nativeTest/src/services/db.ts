@@ -189,7 +189,7 @@ function createCoreTables(): void {
       familyHistory TEXT,
       familyGroupId TEXT,
       status        TEXT DEFAULT 'waiting',
-      priority      INTEGER DEFAULT 0,
+      priority      TEXT DEFAULT 'normal',
       arrivalOrder  INTEGER,
       notes         TEXT,
       __crsql_siteid  TEXT,

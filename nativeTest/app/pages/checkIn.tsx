@@ -31,9 +31,18 @@ export default function CheckIn() {
   const [selectedReason, setSelectedReason] = useState('');
   const [urgentAnswers, setUrgentAnswers] = useState<Record<string, boolean>>({});
 
-  const toggleUrgent = (key: string) => {
-    setUrgentAnswers(prev => ({ ...prev, [key]: !prev[key] }));
-  };
+  // const toggleUrgent = (key: string) => {
+  //   setUrgentAnswers(prev => ({ ...prev, [key]: !prev[key] }));
+  // };
+  //TODO: make toggleUrgent singular for now, it is not saving multiple urgents
+const toggleUrgent = (key: string) => {
+  setUrgentAnswers(prev => {
+    if (prev[key]) return {};
+    return { [key]: true };
+  });
+};
+
+
 
   const getUrgentTrigger = (): string | undefined => {
     return Object.keys(urgentAnswers).find(k => urgentAnswers[k]);
@@ -50,8 +59,7 @@ export default function CheckIn() {
     }
 
     try {
-      //no need to call initDB here since it's called in the root layout.
-      initDB();
+
       const urgentTrigger = getUrgentTrigger();
       const isUrgent = !!urgentTrigger;
 

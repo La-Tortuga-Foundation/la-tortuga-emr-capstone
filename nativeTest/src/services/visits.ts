@@ -45,11 +45,14 @@ export function getWaitingRoomVisits() {
       p.firstName,
       p.lastName,
       p.arrivalOrder,
-      p.communityId
+      p.communityId,
+      p.priority
     FROM visits v
     JOIN patients p ON v.patientId = p.patientId
     ORDER BY 
-      CASE v.statusTypeId WHEN 'urgent' THEN 0 ELSE 1 END,
+      CASE v.statusTypeId WHEN 'critical' THEN 0
+      WHEN 'urgent' THEN 1
+      ELSE 2 END,
       p.arrivalOrder ASC
   `);
 }
@@ -59,6 +62,10 @@ export function getVisitByPatientId(patientId: string) {
     [patientId]);
 
 }
+export function updateVisitStatus(visitId: string, status: 'critical' | 'urgent' | 'waiting'): void {
+  run(`UPDATE visits SET statusTypeId = ? WHERE visitId = ?`, [status, visitId]);
+}
+
 
 export function updateVisit(visitId: string, reasonForVisit: string, reasonForVisitTag: string, isUrgent: boolean) {
   try {
