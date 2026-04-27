@@ -5,7 +5,7 @@
  * Uses __crsql_version as vector clock instead of syncVersion
  */
 
-import { query, run, queryOne } from './db';
+import { query, queryOne, run } from './db';
 import { getTabletId } from './networkCoordinator';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -394,6 +394,7 @@ function updateStatus(syncing: boolean, progress: string): void {
     onSyncStatusChange(syncing, progress);
   }
   if (!syncing && onSyncComplete) {
+    console.log('[SYNC] Firing onSyncComplete callback');
     onSyncComplete();
   }
 }
