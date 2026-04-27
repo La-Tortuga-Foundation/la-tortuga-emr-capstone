@@ -1,8 +1,8 @@
-import { query, run } from './db';
-import { isClientConnected, sendHandshakeOnExistingConnection } from './syncSocket';
-import { InventoryData, InventoryRow, CategoryRow, MedCategoryRow, logRow, dataForDropDowns } from '../../app/pages/interfaces/InventoryInterfaces';
 import { ViewStyle } from "react-native";
 import { Snackbar } from 'react-native-snackbar';
+import { CategoryRow, InventoryData, InventoryRow, MedCategoryRow, dataForDropDowns, logRow } from '../../app/pages/interfaces/InventoryInterfaces';
+import { query, run } from './db';
+import { isClientConnected, sendHandshakeOnExistingConnection } from './syncSocket';
 
 export const testTypes: dataForDropDowns[] = [
   { label: "ml", value: '0' },
@@ -120,11 +120,9 @@ export function sendWarningNewInv(inventory: InventoryData[]): void {
 
   for (const { name } of inventory.filter(e => e.warningAmt >= e.amount)) {
     const newLogMessage = name + " is low";
-    if (!logData.find(e => e.logMessage === newLogMessage)) {
-      finalMessage = newLogMessage;
-      numLows++;
-      run(`INSERT OR IGNORE INTO logs(logMessage) VALUES(?);`, [newLogMessage]);
-    }
+    finalMessage = newLogMessage;
+    numLows++;
+    run(`INSERT OR IGNORE INTO logs(logMessage) VALUES(?);`, [newLogMessage]);
   }
   if (numLows) {
     Snackbar.show({
@@ -140,17 +138,17 @@ export function sendWarningNewInv(inventory: InventoryData[]): void {
 }
 
 export function sendWarningOnCurrentInv(): void {
-  const logData = query<logRow>('SELECT logMessage FROM logs');
   let finalMessage = "";
   let numLows = 0;
 
+  console.log('[INVENTORY] sendWarningOnCurrentInv called');
+  console.log('[INVENTORY] items:', JSON.stringify(query<{ name: string, warningThreshold: number, quantity: number }>('SELECT name, warningThreshold, quantity FROM inventory_items')));
+
   for (const { name } of query<{ name: string, warningThreshold: number, quantity: number }>('SELECT name, warningThreshold, quantity FROM inventory_items').filter(e => e.warningThreshold >= e.quantity)) {
     const newLogMessage = name + " is low";
-    if (!logData.find(e => e.logMessage === newLogMessage)) {
-      finalMessage = newLogMessage;
-      numLows++;
-      run(`INSERT OR IGNORE INTO logs(logMessage) VALUES(?);`, [newLogMessage]);
-    }
+    finalMessage = newLogMessage;
+    numLows++;
+    run(`INSERT OR IGNORE INTO logs(logMessage) VALUES(?);`, [newLogMessage]);
   }
   if (numLows) {
     Snackbar.show({

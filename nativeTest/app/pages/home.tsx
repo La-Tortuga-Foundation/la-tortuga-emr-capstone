@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
-import { ScrollView, Text, View, TouchableOpacity } from "react-native";
-import { useRouter } from "expo-router";
-import { getWaitingRoomVisits } from '../../src/services/visits';
-import { setSyncCompleteCallback } from '../../src/services/syncManager';
-import "../../global.css";
-import { getPatientById } from "@/src/services/patients";
 import { run } from "@/src/services/db";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import "../../global.css";
+import { sendWarningOnCurrentInv } from '../../src/services/inventoryService';
+import { setSyncCompleteCallback } from '../../src/services/syncManager';
+import { getWaitingRoomVisits } from '../../src/services/visits';
 
 export default function Home() {
   const router = useRouter();
@@ -27,9 +27,12 @@ useEffect(() => {
   setSyncCompleteCallback(() => {
     console.log('[HOME] Sync complete — reloading visits');
     loadVisits();
+    console.log('[HOME] Checking inventory warnings...');
+    sendWarningOnCurrentInv();
   });
   const interval = setInterval(() => {
     loadVisits();
+    sendWarningOnCurrentInv();
   }, 10000);
   return () => clearInterval(interval);
 }, []);
