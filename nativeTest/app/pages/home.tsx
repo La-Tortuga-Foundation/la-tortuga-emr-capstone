@@ -1,11 +1,11 @@
 import { run } from "@/src/services/db";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View, Alert } from "react-native";
 import "../../global.css";
 import { sendWarningOnCurrentInv } from '../../src/services/inventoryService';
 import { setSyncCompleteCallback } from '../../src/services/syncManager';
-import { getWaitingRoomVisits } from '../../src/services/visits';
+import { getWaitingRoomVisits, updateVisitStatus, updateVisit } from '../../src/services/visits';
 
 export default function Home() {
   const router = useRouter();
