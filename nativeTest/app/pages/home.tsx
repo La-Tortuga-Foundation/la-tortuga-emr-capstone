@@ -113,18 +113,18 @@ useEffect(() => {
                      onPress={() => {
                             Alert.alert('Update Priority: ' + v.firstName + ' ' + v.lastName, 'Select an option', [
                               { text: 'Critical', onPress: () => { 
-                                updateVisitStatus(v.visitId, 'critical'); 
                                 updateVisit(v.visitId, v.reasonForVisit, v.reasonForVisitTag || '', true);
+                                updateVisitStatus(v.visitId, 'critical'); 
                                 loadVisits(); 
                               }},
                               { text: 'Urgent', onPress: () => { 
-                                updateVisitStatus(v.visitId, 'urgent'); 
                                 updateVisit(v.visitId, v.reasonForVisit, v.reasonForVisitTag || '', true);
+                                updateVisitStatus(v.visitId, 'urgent'); 
                                 loadVisits(); 
                               }},
                               { text: 'Normal', onPress: () => { 
-                                updateVisitStatus(v.visitId, 'waiting'); 
                                 updateVisit(v.visitId, v.reasonForVisit, '', false);
+                                updateVisitStatus(v.visitId, 'waiting'); 
                                 loadVisits();
                               }},
 
