@@ -117,7 +117,7 @@ useEffect(() => {
                                 updateVisit(v.visitId, v.reasonForVisit, v.reasonForVisitTag || '', true);
                                 loadVisits(); 
                               }},
-                              { text: 'High', onPress: () => { 
+                              { text: 'Urgent', onPress: () => { 
                                 updateVisitStatus(v.visitId, 'urgent'); 
                                 updateVisit(v.visitId, v.reasonForVisit, v.reasonForVisitTag || '', true);
                                 loadVisits(); 
