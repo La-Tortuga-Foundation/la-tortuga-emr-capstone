@@ -112,13 +112,22 @@ useEffect(() => {
                       <TouchableOpacity 
                      onPress={() => {
                             Alert.alert('Update Priority: ' + v.firstName + ' ' + v.lastName, 'Select an option', [
-                              { text: 'Critical', onPress: () => { updateVisitStatus(v.visitId, 'critical'); router.replace('/pages/home'); }},
-                              { text: 'Urgent', onPress: () => { updateVisitStatus(v.visitId, 'urgent'); router.replace('/pages/home'); }},
-                             { text: 'Normal', onPress: () => { 
-                              updateVisitStatus(v.visitId, 'waiting'); 
-                              updateVisit(v.visitId, v.reasonForVisit, '', false);
-                              router.replace('/pages/home');
-                            }},
+                              { text: 'Critical', onPress: () => { 
+                                updateVisitStatus(v.visitId, 'critical'); 
+                                updateVisit(v.visitId, v.reasonForVisit, v.reasonForVisitTag || '', true);
+                                loadVisits(); 
+                              }},
+                              { text: 'High', onPress: () => { 
+                                updateVisitStatus(v.visitId, 'urgent'); 
+                                updateVisit(v.visitId, v.reasonForVisit, v.reasonForVisitTag || '', true);
+                                loadVisits(); 
+                              }},
+                              { text: 'Normal', onPress: () => { 
+                                updateVisitStatus(v.visitId, 'waiting'); 
+                                updateVisit(v.visitId, v.reasonForVisit, '', false);
+                                loadVisits();
+                              }},
+
 
                             ]);
 
