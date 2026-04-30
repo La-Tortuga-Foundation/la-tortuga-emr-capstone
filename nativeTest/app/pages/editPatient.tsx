@@ -1,11 +1,10 @@
+import { queryOne } from "@/src/services/db";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ScrollView, Text, View, TextInput, TouchableOpacity, Alert } from "react-native";
-import { useRouter } from "expo-router";
-import { createPatient, getPatientById, loadPatientInfo, updatePatient } from "../../src/services/patients";
-import { createVisit, getVisitByPatientId, updateVisit } from "../../src/services/visits";
+import { ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import "../../global.css";
-import { useLocalSearchParams } from "expo-router";
-import { queryOne, run } from "@/src/services/db";
+import { loadPatientInfo, updatePatient } from "../../src/services/patients";
+import { getVisitByPatientId, updateVisit } from "../../src/services/visits";
 
 
 
@@ -27,8 +26,8 @@ const REASON_OPTIONS = [
 ];
 
 export default function EditPatient() {
-  //getID from params and use to get patient info.
-  const { patientId } = useLocalSearchParams();
+    //getID from params and use to get patient info.
+  const {patientId} = useLocalSearchParams();
 
   const router = useRouter();
   const [firstName, setFirstName] = useState('');
@@ -38,61 +37,52 @@ export default function EditPatient() {
   const [urgentAnswers, setUrgentAnswers] = useState<Record<string, boolean>>({});
   const [visitId, setVisitId] = useState('');
 
-  // const toggleUrgent = (key: string) => {
-  //   setUrgentAnswers(prev => ({ ...prev, [key]: !prev[key] }));
-  // };
-  //TODO: make toggleUrgent singular for now, it is not saving multiple urgents
   const toggleUrgent = (key: string) => {
-  setUrgentAnswers(prev => {
-    if (prev[key]) return {};
-    return { [key]: true };
-  });
+  setUrgentAnswers(prev => ({ ...prev, [key]: !prev[key] }));
 };
 
-
-
   useEffect(() => {
+//     run(`DELETE FROM visits`);
+// run(`DELETE FROM patients`);
 
-    if (patientId) //if ID exists in params.
+    if(patientId) //if ID exists in params.
     {
 
       const patient = loadPatientInfo(patientId as string);
       const visit = getVisitByPatientId(patientId as string);
-      // console.log(patient);
-      // console.log(visit);
+      //console.log(patient);
+     // console.log(visit);
       console.log("VISITS: " + JSON.stringify(queryOne('select * from visits where visitId = ?', [visitId])));
 
       if (patient) { //if pateint exists in DB with that ID, load their info into state.
-        setFirstName(patient.firstName);
-        setLastName(patient.lastName);
-        setDob(patient.dateOfBirth);
-      }
-      //reason for visit
-      if (visit) {
-        setVisitId(visit.visitId);
-        setSelectedReason(visit.reasonForVisit || '');
-        if (visit.reasonForVisitTag) {
-          setUrgentAnswers({ [visit.reasonForVisitTag]: true });
-        } else {
-          setUrgentAnswers({});
+          setFirstName(patient.firstName);
+          setLastName(patient.lastName);
+          setDob(patient.dateOfBirth);
         }
+      //reason for visit
+          if(visit){
+            setVisitId(visit.visitId);
+            setSelectedReason(visit.reasonForVisit || '');
+              if (visit.reasonForVisitTag) {
+                setUrgentAnswers({ [visit.reasonForVisitTag]: true });
+                } else {
+                setUrgentAnswers({});
+}
+          
+          }
 
-      }
-
-
+      
     }
   }, []);
 
 
-  const handleUpdate = () => {
-    updatePatient(patientId as string, firstName, lastName, dob);
-    const firstActive = Object.keys(urgentAnswers).find(k => urgentAnswers[k]) || '';
-    const isUrgent = !!firstActive;
-    console.log('[EDIT] urgentAnswers:', JSON.stringify(urgentAnswers));
-    console.log('[EDIT] firstActive:', firstActive, 'isUrgent:', isUrgent);
-    updateVisit(visitId as string, selectedReason, firstActive, isUrgent);
-    router.replace('/pages/home');
-  }
+   const handleUpdate = () => {
+   updatePatient(patientId as string, firstName, lastName, dob);
+   const firstActive = Object.keys(urgentAnswers).find(k => urgentAnswers[k]) || '';
+   const isUrgent = !!firstActive;
+   updateVisit(visitId as string, selectedReason, firstActive, isUrgent);
+   router.replace('/pages/home');
+}
 
 
 
@@ -102,7 +92,7 @@ export default function EditPatient() {
         <Text className="text-2xl font-bold text-center text-green-800 mb-4">
           UPDATE PATIENT INFO
         </Text>
-
+            
         {/* Patient Info */}
         <Text className="text-sm font-bold text-gray-500 uppercase mb-2">Patient Information</Text>
         <TextInput
@@ -168,24 +158,15 @@ export default function EditPatient() {
         </TouchableOpacity>
 
       </View>
-      <View className="flex-row justify-between">
-        <TouchableOpacity className="bg-green-700 p-4 rounded-lg m-4 w-3/12"
+<View className="items-center">
+        <TouchableOpacity className="bg-green-700 p-4 rounded-lg m-4 w-5/12"
           onPress={() => {
             router.setParams({}); router.push({
               pathname: '/medicalFormStart',
               params: { visitId: visitId, patientId: patientId }
             })
           }}>
-          <Text className="text-white text-center font-bold text-lg">medical forms</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="bg-green-700 p-4 rounded-lg m-4 w-3/12"
-          onPress={() => {
-            router.setParams({}); router.push({
-              pathname: '/dentalFormStart',
-              params: { visitId: visitId, patientId: patientId }
-            })
-          }}>
-          <Text className="text-white text-center font-bold text-lg">dental forms</Text>
+          <Text className="text-white text-center font-bold text-lg">Medical Forms</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

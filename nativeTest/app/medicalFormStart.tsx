@@ -1,13 +1,14 @@
-import { Text, View, Pressable, ScrollView, TextInput } from "react-native";
+import { BottomTabBarProps, createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { createBottomTabNavigator, BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { getInventoryItems, dropdownStyle, sanitizeNumericInput, sendWarningOnCurrentInv, sendWarningNewInv } from '../src/services/inventoryService';
-import { Dropdown } from 'react-native-element-dropdown';
-import { dataForDropDowns, CategoryRow, MedCategoryRow, InventoryData, Props2, medicationFormData, vitalData } from './pages/interfaces/InventoryInterfaces'
-import { Controller, useWatch, useForm, useFieldArray, Control } from "react-hook-form";
-import { query, queryOne, run } from '../src/services/db'
 import { useLocalSearchParams } from 'expo-router';
-import { RootStackParamList, TabParamList, itemTypes, inventoryTransaction } from './pages/interfaces/medFormInterface';
+import { Control, Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Dropdown } from 'react-native-element-dropdown';
+import { query, queryOne, run } from '../src/services/db';
+import { dropdownStyle, getInventoryItems, sanitizeNumericInput, sendWarningNewInv } from '../src/services/inventoryService';
+import { isClientConnected, sendHandshakeOnExistingConnection } from '../src/services/syncSocket';
+import { InventoryData, Props2, medicationFormData, vitalData } from './pages/interfaces/InventoryInterfaces';
+import { RootStackParamList, TabParamList, inventoryTransaction, itemTypes } from './pages/interfaces/medFormInterface';
 
 function generateId(): string {
     return 'm-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
@@ -299,8 +300,9 @@ const onSubmit = (data: medicationFormData) => {
         const dbData = getInventoryItems();
         const list = [];
         for (const med of data.meds) {
-            if (med.amount > dbData.find(e => e.itemId === med.item.itemId).amount) {
-                list.push(med.item.name);
+            const foundItem = dbData.find(e => e.itemId === med.item.itemId);
+            if (foundItem && med.amount > foundItem.amount) {
+            list.push(med.item.name);
             }
         }
         if (list.length > 0) {
@@ -308,20 +310,25 @@ const onSubmit = (data: medicationFormData) => {
             return;
         }
         run(
-            `INSERT INTO medical_intakes (intakeId, visitId, painLevel, painDuration, painLocations, painQuality, quadrant, antibioticCheckbox, prescriptionMeds, otcMeds, herbalRemedies, carePlan, clinicalNotes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
-            [intakeId, data.visitId, null, null, null, null, null, null, null, null, null, data.carePlan, data.clinicalNotes]
-        );
+    `INSERT OR REPLACE INTO medical_intakes (intakeId, visitId, painLevel, painDuration, painLocations, painQuality, quadrant, antibioticCheckbox, prescriptionMeds, otcMeds, herbalRemedies, carePlan, clinicalNotes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+    [intakeId, data.visitId, null, null, null, null, null, null, null, null, null, data.carePlan, data.clinicalNotes]
+);
 
         for (const med of data.meds) {
-            run(
-                `INSERT INTO inventory_transactions (transactionId, itemId, visitId, transactionType, quantityDelta, recordedAt) VALUES (?, ?, ?, ?, ?, ?);`,
-                [generateId(), med.item.itemId, data.visitId, "dispense", med.amount, new Date().toISOString()]
-            );
-            run(
-                `UPDATE inventory_items SET quantity = quantity - ? WHERE itemId = ?`,
-                [med.amount, med.item.itemId]
-            );
-        }
+    run(
+        `INSERT INTO inventory_transactions (transactionId, itemId, visitId, transactionType, quantityDelta, recordedAt) VALUES (?, ?, ?, ?, ?, ?);`,
+        [generateId(), med.item.itemId, data.visitId, "dispense", med.amount, new Date().toISOString()]
+    );
+    run(
+        `UPDATE inventory_items SET quantity = quantity - ?, __crsql_version = __crsql_version + 1 WHERE itemId = ?`,
+        [med.amount, med.item.itemId]
+    );
+}
+
+if (isClientConnected()) {
+    console.log('[MEDICAL] Medications dispensed — triggering sync');
+    setTimeout(() => sendHandshakeOnExistingConnection(), 100);
+}
         sendWarningNewInv(dbData.filter(e => data.meds.some(m => m.item.itemId === e.itemId)).map(e => ({ ...e, amount: e.amount - (data.meds.find(m => m.item.itemId === e.itemId)?.amount ?? 0) })));
 
         if (data.vitals.height || data.vitals.weight || data.vitals.temperature || data.vitals.pulse || data.vitals.oxygenSaturation || data.vitals.respiratoryRate) {

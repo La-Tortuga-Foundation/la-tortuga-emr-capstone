@@ -3,6 +3,7 @@ import { Snackbar } from 'react-native-snackbar';
 import { CategoryRow, InventoryData, InventoryRow, MedCategoryRow, dataForDropDowns, logRow } from '../../app/pages/interfaces/InventoryInterfaces';
 import { query, run } from './db';
 import { isClientConnected, sendHandshakeOnExistingConnection } from './syncSocket';
+const acknowledgedWarnings = new Set<string>();
 
 export const testTypes: dataForDropDowns[] = [
   { label: "ml", value: '0' },
@@ -139,26 +140,32 @@ export function sendWarningNewInv(inventory: InventoryData[]): void {
 }
 
 export function sendWarningOnCurrentInv(): void {
-  let finalMessage = "";
   let numLows = 0;
-
-  console.log('[INVENTORY] sendWarningOnCurrentInv called');
-  console.log('[INVENTORY] items:', JSON.stringify(query<{ name: string, warningThreshold: number, quantity: number }>('SELECT name, warningThreshold, quantity FROM inventory_items')));
+  const newLowItems: string[] = [];
 
   for (const { name } of query<{ name: string, warningThreshold: number, quantity: number }>('SELECT name, warningThreshold, quantity FROM inventory_items').filter(e => e.warningThreshold >= e.quantity)) {
     const newLogMessage = name + " is low";
-    finalMessage = newLogMessage;
-    numLows++;
-    run(`INSERT OR IGNORE INTO logs(logMessage) VALUES(?);`, [newLogMessage]);
+    if (!acknowledgedWarnings.has(newLogMessage)) {
+      newLowItems.push(newLogMessage);
+      numLows++;
+      run(`INSERT OR IGNORE INTO logs(logMessage) VALUES(?);`, [newLogMessage]);
+    }
   }
+
   if (numLows) {
+    const displayMessage = numLows === 1 
+      ? newLowItems[0] 
+      : `${numLows} items are low on inventory`;
+      
     Snackbar.show({
-      text: `⚠️ ${numLows} : ${finalMessage}`,
+      text: `⚠️ ${displayMessage}`,
       duration: Snackbar.LENGTH_INDEFINITE,
       action: {
         text: 'X',
         textColor: 'green',
-        onPress: () => { },
+        onPress: () => {
+          newLowItems.forEach(item => acknowledgedWarnings.add(item));
+        },
       },
     });
   }

@@ -1,11 +1,10 @@
-import { run } from "@/src/services/db";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View, Alert } from "react-native";
+import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import "../../global.css";
 import { sendWarningOnCurrentInv } from '../../src/services/inventoryService';
 import { setSyncCompleteCallback } from '../../src/services/syncManager';
-import { getWaitingRoomVisits, updateVisitStatus, updateVisit } from '../../src/services/visits';
+import { getWaitingRoomVisits, updateVisit, updateVisitStatus } from '../../src/services/visits';
 
 export default function Home() {
   const router = useRouter();
@@ -44,23 +43,24 @@ useEffect(() => {
         className="bg-green-700 p-3 m-2 rounded-lg"
         onPress={() => router.push('/pages/checkIn' as any)}
       >
-        <Text className="text-white text-center font-bold">+ New Patient Check-In</Text>
+        <Text className="text-white text-center font-bold text-lg">+ New Patient Check-In</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        className="bg-gray-300 p-2 m-2 rounded-lg"
-        onPress={loadVisits}
-      >
-        <Text className="text-center text-gray-700">Refresh</Text>
-      </TouchableOpacity>
+      <View className="flex-row">
+        <TouchableOpacity
+          className="bg-blue-600 p-3 m-2 rounded-lg flex-1"
+          onPress={() => router.push('/inventoryDisplay' as any)}
+        >
+          <Text className="text-white text-center font-bold">Inventory</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-  onPress={() => { run(`DELETE FROM visits`); run(`DELETE FROM patients`); alert('Cleared!'); }}
-  className="bg-red-600 p-4 rounded-lg mt-4"
->
-  <Text className="text-white text-center font-bold text-lg">Clear All Data</Text>
-</TouchableOpacity>
-
+        <TouchableOpacity
+          className="bg-blue-600 p-3 m-2 rounded-lg flex-1"
+          onPress={() => router.push('/logDisplay' as any)}
+        >
+          <Text className="text-white text-center font-bold">Logs</Text>
+        </TouchableOpacity>
+      </View>
       <View className="flex-1 bg-gray-100 items-center justify-center">
         <View className="h-5/6 w-full max-w-md px-4 bg-white rounded-lg">
           <Text className="text-2xl font-bold mb-1 p-2 text-center">

@@ -1,9 +1,7 @@
-import { useState } from "react";
-import { Pressable, Text, TextInput, View, Image, TouchableOpacity } from "react-native";
-import "../global.css";
 import { useRouter } from 'expo-router';
-import { getUserByUsername } from "@/src/services/users";
-import { query, queryOne, run } from "@/src/services/db";
+import { useState } from "react";
+import { Image, Pressable, Text, TextInput, View } from "react-native";
+import "../global.css";
 export default function Login() {
 
   const [userName, setUserName] = useState('');
@@ -69,17 +67,7 @@ export default function Login() {
         >
           <Text className="text-white text-center font-bold">Log in</Text>
         </Pressable>
-        <TouchableOpacity onPress={() => router.push('/db-test' as any)}>
-          <Text>DB Test</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => router.push('/inventoryDisplay' as any)}>
-          <Text>inv access</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => router.push('/logDisplay' as any)}>
-          <Text>Logs Test</Text>
-        </TouchableOpacity>
+       
       </View>
 
     </View>
