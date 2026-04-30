@@ -37,9 +37,16 @@ export default function EditPatient() {
   const [urgentAnswers, setUrgentAnswers] = useState<Record<string, boolean>>({});
   const [visitId, setVisitId] = useState('');
 
-  const toggleUrgent = (key: string) => {
-  setUrgentAnswers(prev => ({ ...prev, [key]: !prev[key] }));
-};
+//   const toggleUrgent = (key: string) => {
+//   setUrgentAnswers(prev => ({ ...prev, [key]: !prev[key] }));
+
+
+// };
+const toggleUrgent = (key: string) => {
+  setUrgentAnswers(prev => {
+    if (prev[key]) return {};
+    return { [key]: true };
+  });
 
   useEffect(() => {
 //     run(`DELETE FROM visits`);
