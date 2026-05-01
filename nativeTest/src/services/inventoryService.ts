@@ -4,6 +4,9 @@ import { CategoryRow, InventoryData, InventoryRow, MedCategoryRow, dataForDropDo
 import { query, run } from './db';
 import { isClientConnected, sendHandshakeOnExistingConnection } from './syncSocket';
 const acknowledgedWarnings = new Set<string>();
+export function clearAcknowledgedWarnings(): void {
+  acknowledgedWarnings.clear();
+}
 
 export const testTypes: dataForDropDowns[] = [
   { label: "ml", value: '0' },

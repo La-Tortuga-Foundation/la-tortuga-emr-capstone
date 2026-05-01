@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import "../../global.css";
-import { sendWarningOnCurrentInv } from '../../src/services/inventoryService';
+import { clearAcknowledgedWarnings, sendWarningOnCurrentInv } from '../../src/services/inventoryService';
 import { setSyncCompleteCallback } from '../../src/services/syncManager';
 import { getWaitingRoomVisits, updateVisit, updateVisitStatus } from '../../src/services/visits';
 
@@ -27,7 +27,7 @@ useEffect(() => {
   setSyncCompleteCallback(() => {
     console.log('[HOME] Sync complete — reloading visits');
     loadVisits();
-    console.log('[HOME] Checking inventory warnings...');
+    clearAcknowledgedWarnings();
     sendWarningOnCurrentInv();
   });
   const interval = setInterval(() => {
