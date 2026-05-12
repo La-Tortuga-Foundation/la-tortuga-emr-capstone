@@ -21,4 +21,5 @@ export type inventoryTransaction = {
     itemId: string;
     transactionType: string;
     quantityDelta: number;
+    transactionId: string;
 }

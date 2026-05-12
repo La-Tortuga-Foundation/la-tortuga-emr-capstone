@@ -1,4 +1,4 @@
-import { FieldError, Control, UseFieldArrayRemove } from "react-hook-form"
+import { FieldErrors, Control, UseFieldArrayRemove } from "react-hook-form"
 
 export interface dataForDropDowns {
     label: string
@@ -21,7 +21,7 @@ export type Props = {
     control: Control<FormData>;
     index: number;
     remove: UseFieldArrayRemove;
-    errors: FieldError<FormData>;
+    errors: FieldErrors<FormData>;
     amtTypeData: dataForDropDowns[];
     tagsTypeData: dataForDropDowns[];
 };
@@ -65,6 +65,7 @@ export type logRow = {
 export type medicationRow = {
     item: InventoryRow
     amount: number
+    transactionId: string | null;
 }
 export type vitalData = {
     height: number | null;

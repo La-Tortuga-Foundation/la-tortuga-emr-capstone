@@ -7,7 +7,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import { query, queryOne, run } from '../src/services/db';
 import { dropdownStyle, getInventoryItems, sanitizeNumericInput, sendWarningNewInv } from '../src/services/inventoryService';
 import { isClientConnected, sendHandshakeOnExistingConnection } from '../src/services/syncSocket';
-import { InventoryData, Props2, medicationFormData, vitalData } from './pages/interfaces/InventoryInterfaces';
+import { InventoryData, InventoryRow, Props2, medicationFormData, vitalData } from './pages/interfaces/InventoryInterfaces';
 import { RootStackParamList, TabParamList, inventoryTransaction, itemTypes } from './pages/interfaces/medFormInterface';
 
 function generateId(): string {
@@ -220,7 +220,7 @@ function MedicationPage({ control, dbData }: { control: Control<medicationFormDa
                         />
                     ))}
                     <Pressable
-                        onPress={() => appendMeds({ item: { itemId: "", name: "", quantity: 0, unitTypeId: "", warningThreshold: 0, categoryId: "", medicationTypeId: "" }, amount: 0 })}
+                        onPress={() => appendMeds({ item: { itemId: "", name: "", quantity: 0, unitTypeId: "", warningThreshold: 0, categoryId: "", medicationTypeId: "" }, amount: 0, transactionId: null })}
                         className="bg-blue-500 py-3 rounded-xl mt-4"
                     >
                         <Text className="text-white text-center font-semibold">
@@ -295,43 +295,74 @@ function SubmitPage({ handleSubmit }: { handleSubmit: any }) {
 }
 
 const onSubmit = (data: medicationFormData) => {
-    const intakeId = `intake_${generateId()}`;
+    const existingIntake = queryOne<{ intakeId: string }>(`SELECT intakeId FROM medical_intakes WHERE visitId = ?`, [data.visitId]);
+    const intakeId = existingIntake?.intakeId || `intake_${generateId()}`;
     try {
         const dbData = getInventoryItems();
         const list = [];
         for (const med of data.meds) {
             const foundItem = dbData.find(e => e.itemId === med.item.itemId);
-            if (foundItem && med.amount > foundItem.amount) {
-            list.push(med.item.name);
+            if (foundItem) {
+                const existingTrans = queryOne<inventoryTransaction>(`SELECT quantityDelta FROM inventory_transactions WHERE transactionId = ?`, [med.transactionId]);
+                const currentAmount = foundItem.amount + (existingTrans ? existingTrans.quantityDelta : 0);
+                if (med.amount > currentAmount) {
+                    list.push(med.item.name);
+                }
             }
         }
         if (list.length > 0) {
             alert("Attempting to dispense more medication than is currently in inventory for " + list.join(", "));
             return;
         }
-        run(
-    `INSERT OR REPLACE INTO medical_intakes (intakeId, visitId, painLevel, painDuration, painLocations, painQuality, quadrant, antibioticCheckbox, prescriptionMeds, otcMeds, herbalRemedies, carePlan, clinicalNotes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
-    [intakeId, data.visitId, null, null, null, null, null, null, null, null, null, data.carePlan, data.clinicalNotes]
-);
+        if (existingIntake) {
+            run(
+                `UPDATE medical_intakes SET carePlan = ?, clinicalNotes = ? WHERE intakeId = ?`,
+                [data.carePlan, data.clinicalNotes, intakeId]
+            );
+        } else {
+            run(
+                `INSERT OR REPLACE INTO medical_intakes (intakeId, visitId, painLevel, painDuration, painLocations, painQuality, quadrant, antibioticCheckbox, prescriptionMeds, otcMeds, herbalRemedies, carePlan, clinicalNotes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+                [intakeId, data.visitId, null, null, null, null, null, null, null, null, null, data.carePlan, data.clinicalNotes]
+            );
+        }
 
         for (const med of data.meds) {
-    run(
-        `INSERT INTO inventory_transactions (transactionId, itemId, visitId, transactionType, quantityDelta, recordedAt) VALUES (?, ?, ?, ?, ?, ?);`,
-        [generateId(), med.item.itemId, data.visitId, "dispense", med.amount, new Date().toISOString()]
-    );
-    run(
-        `UPDATE inventory_items SET quantity = quantity - ?, __crsql_version = __crsql_version + 1 WHERE itemId = ?`,
-        [med.amount, med.item.itemId]
-    );
-}
+            if (!med.transactionId) {
+                run(
+                    `INSERT INTO inventory_transactions (transactionId, itemId, visitId, transactionType, quantityDelta, recordedAt) VALUES (?, ?, ?, ?, ?, ?);`,
+                    [generateId(), med.item.itemId, data.visitId, "dispense", med.amount, new Date().toISOString()]
+                );
+                run(
+                    `UPDATE inventory_items SET quantity = quantity - ?, __crsql_version = __crsql_version + 1 WHERE itemId = ?`,
+                    [med.amount, med.item.itemId]
+                );
+            } else {
+                const originalTrans = queryOne<inventoryTransaction>(`SELECT itemId, quantityDelta FROM inventory_transactions WHERE transactionId = ?`, [med.transactionId]);
+                if (!originalTrans) {
+                    throw new Error("Original transaction not found for transactionId: " + med.transactionId);
+                }
+                run(
+                    `UPDATE inventory_transactions SET quantityDelta = ?, recordedAt = ? WHERE transactionId = ?`,
+                    [med.amount, new Date().toISOString(), med.transactionId]
+                );
+                run(
+                    `UPDATE inventory_items SET quantity = quantity - ?, __crsql_version = __crsql_version + 1 WHERE itemId = ?`,
+                    [med.amount - originalTrans.quantityDelta, med.item.itemId]
+                );
+            }
+        }
 
-if (isClientConnected()) {
-    console.log('[MEDICAL] Medications dispensed — triggering sync');
-    setTimeout(() => sendHandshakeOnExistingConnection(), 100);
-}
+        if (isClientConnected()) {
+            console.log('[MEDICAL] Medications dispensed — triggering sync');
+            setTimeout(() => sendHandshakeOnExistingConnection(), 100);
+        }
         sendWarningNewInv(dbData.filter(e => data.meds.some(m => m.item.itemId === e.itemId)).map(e => ({ ...e, amount: e.amount - (data.meds.find(m => m.item.itemId === e.itemId)?.amount ?? 0) })));
-
-        if (data.vitals.height || data.vitals.weight || data.vitals.temperature || data.vitals.pulse || data.vitals.oxygenSaturation || data.vitals.respiratoryRate) {
+        if (existingIntake) {
+            run(
+                `UPDATE visit_vitals SET height = ?, weight = ?, temperature = ?, pulse = ?, oxygenSaturation = ?, respiratoryRate = ?, recordedAt = ? WHERE intakeId = ?`,
+                [data.vitals.height, data.vitals.weight, data.vitals.temperature, data.vitals.pulse, data.vitals.oxygenSaturation, data.vitals.respiratoryRate, new Date().toISOString(), intakeId]
+            );
+        } else if (data.vitals.height || data.vitals.weight || data.vitals.temperature || data.vitals.pulse || data.vitals.oxygenSaturation || data.vitals.respiratoryRate) {
             run(
                 `INSERT INTO visit_vitals (vitalId, intakeId, height, weight, temperature, pulse, oxygenSaturation, respiratoryRate, recordedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
                 [generateId(), intakeId, data.vitals.height, data.vitals.weight, data.vitals.temperature, data.vitals.pulse, data.vitals.oxygenSaturation, data.vitals.respiratoryRate, new Date().toISOString()]
@@ -346,15 +377,43 @@ if (isClientConnected()) {
 
 function TabNavigator({ visitId, patientId }: { visitId: string; patientId: string }) {
     const intakeRow = queryOne<{ carePlan: string, clinicalNotes: string, intakeId: string }>('SELECT carePlan, clinicalNotes, intakeId FROM medical_intakes WHERE visitId = ?', [visitId]);
-    const invTransRows = query<inventoryTransaction>('SELECT itemId, transactionType, quantityDelta FROM inventory_transactions WHERE visitId = ?', [visitId]);
+    const invTransRows = query<inventoryTransaction>('SELECT transactionId, itemId, transactionType, quantityDelta FROM inventory_transactions WHERE visitId = ?', [visitId]);
     const emptyRow = { height: null, weight: null, temperature: null, pulse: null, oxygenSaturation: null, respiratoryRate: null } as vitalData;
     const vitalsRows = intakeRow ? queryOne<vitalData>('SELECT height, weight, temperature, pulse, oxygenSaturation, respiratoryRate FROM visit_vitals WHERE intakeId = ?', [intakeRow.intakeId]) ?? emptyRow : emptyRow;
     const dbData: InventoryData[] = getInventoryItems();
-    console.log("Vitals, ", vitalsRows);
+
     const { control, handleSubmit } = useForm<medicationFormData>({
         mode: "onChange",
         defaultValues: {
-            meds: invTransRows.map(trans => ({ item: dbData.find((e) => e.itemId === trans.itemId) || { itemId: "", name: "", quantity: 0, unitTypeId: "", warningThreshold: 0, categoryId: "", medicationTypeId: "" }, amount: trans.quantityDelta })) ?? [],
+            meds: invTransRows.map(trans => {
+                const found = dbData.find(e => e.itemId === trans.itemId);
+
+                const item: InventoryRow = found
+                    ? {
+                        itemId: found.itemId ?? "",
+                        name: found.name,
+                        quantity: found.amount,
+                        unitTypeId: found.amountType?.value ?? "",
+                        warningThreshold: found.warningAmt,
+                        categoryId: found.category?.value ?? "",
+                        medicationTypeId: found.medicationTypeId ?? "",
+                    }
+                    : {
+                        itemId: "",
+                        name: "",
+                        quantity: 0,
+                        unitTypeId: "",
+                        warningThreshold: 0,
+                        categoryId: "",
+                        medicationTypeId: "",
+                    };
+
+                return {
+                    item,
+                    amount: trans.quantityDelta,
+                    transactionId: trans.transactionId
+                };
+            }),
             vitals: {
                 height: vitalsRows.height,
                 weight: vitalsRows.weight,
